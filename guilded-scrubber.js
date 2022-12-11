@@ -1,10 +1,11 @@
 // USER INPUT
-const channelId = '888708e5-c551-433c-93a4-231cc07403f2';
-const decryptMode = true;
-const userId = 'Vmy2GNwA';
-const secretKey = 'vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3';
-const cookie =
-  'guilded_mid=25dfc6b311d00377d50a3cb52f3292eb; hmac_signed_session=d00ea31ad18e9f72ba7d3d0913c12e20f2762c5894f8ff023490ff07c45ec02c790de2f7e25e3cf88a39262dfe86.32a5272c63d18705fc26d068777429de.4cf8bdf196ef6a8fce2bf28896ccbb5c6fb1b701a3e0e58a27d850cb1dc71655; authenticated=true; __stripe_mid=00e3b9b3-6649-4f0d-9c60-7f91e45975a891f291; guilded_ipah=3b485c15be84ad3e2d22f4d1a8ee7c14; gk=can_edit_socket_permissions%2Cshow_new_bot_creator%2Cshow_activity_filter%2Cyt_allow_custom_name%2Cshow_bot_explore_native%2Cshow_bot_explore_web%2Cmeasure_memory%2Crelease_discover%2Cchat_message_context_menu%2Cnative_user_social_connections%2Cvirtualized_sidebar_members%2Cstreaming_pip%2Csocket_user_presence_v2%2Cnative_add_reply_on_chat_message_press%2Chide_message_embeds%2Cprofile_hover_card_v3%2Cpolls_v2%2Cin_app_update_banner_experiment%2Caggregate_event_calendar%2Cpartner_program_v2%2Cdeep_search%2Cshow_gradient_role_color_picker%2Cvideo_streaming_pip_view_enabled%2Cadd_external_bots%2Cexternal_bots%2Cstream_simulcast_disabled%2Cenable_rest_api_sockets%2Cbot_auth_tokens%2Cdeveloper_mode_v2%2Cshow_game_presence';
+const channelId = '';
+const decryptMode = false;
+const deleteMode = false;
+
+const secretKey = '';
+const cookie = '';
+const userId = '';
 // CONSTS
 const algorithm = 'aes-256-ctr';
 const crypto = require('crypto');
@@ -21,7 +22,10 @@ async function main() {
     if (!messages) break;
     beforeDate = messages[messages.length - 1].createdAt;
 
-    const filteredMessages = filterMessages(messages, decryptMode);
+    const filteredMessages = filterMessages(
+      messages,
+      decryptMode || deleteMode,
+    );
     if (!filterMessages?.length) continue;
 
     const texts = getTextFromMessages(filteredMessages);
@@ -30,9 +34,10 @@ async function main() {
     if (decryptMode) {
       newMessages = decryptTexts(texts);
     } else {
-      newMessages = encryptTexts(texts);
+      newMessages = encryptTexts(texts, deleteMode);
     }
     await updateMessages(channelId, newMessages);
+    if (deleteMode) deleteMessages(channelId, newMessages);
   } while (messages?.length >= messageLimit);
 }
 
@@ -95,9 +100,23 @@ function _buildMessageContent(contentText) {
   };
 }
 
-function filterMessages(messages, decryptMode = false) {
+async function deleteMessages(channelId, messages) {
+  const messageIds = Object.keys(messages);
+  for (let i = 0; i < messageIds.length; i++) {
+    await _deleteMessage(channelId, messageIds[i]);
+  }
+}
+
+function _deleteMessage(channelId, messageId) {
+  const messageUrl = new URL(
+    `https://www.guilded.gg/api/channels/${channelId}/messages/${messageId}`,
+  );
+  return _fetchGuilded(messageUrl, 'DELETE');
+}
+
+function filterMessages(messages, includeEncryptedMessages = false) {
   const temp = messages.filter((message) => message.createdBy === userId);
-  if (decryptMode) return temp;
+  if (includeEncryptedMessages) return temp;
   return temp.filter((message) => {
     const text = _findTextInNodes(message.content.document.nodes);
     return text.indexOf(ivSearchStr) === -1;
@@ -124,10 +143,14 @@ async function _fetchGuilded(url, method = 'GET', data) {
   return res.json();
 }
 
-function encryptTexts(texts) {
+function encryptTexts(texts, deleteMode = false) {
   let encryptedTexts = {};
   Object.entries(texts).forEach(([messageid, text]) => {
-    encryptedTexts[messageid] = encrypt(text);
+    if (deleteMode) {
+      encryptedTexts[messageid] = '[deleted for privacy]';
+    } else {
+      encryptedTexts[messageid] = encrypt(text);
+    }
   });
   return encryptedTexts;
 }
@@ -138,7 +161,7 @@ function decryptTexts(texts) {
     const messageId = textObj[0];
     const ivIndex = textObj[1].indexOf(ivSearchStr);
     const iv = Buffer.from(
-      textObj[1].slice(ivIndex + 5, textObj[1].length - 1),
+      textObj[1].slice(ivIndex + 5, textObj[1].length),
       'hex',
     );
     const text = textObj[1].slice(0, ivIndex);
@@ -150,11 +173,12 @@ function decryptTexts(texts) {
 
 const encrypt = (text) => {
   const iv = crypto.randomBytes(16);
+  console.log({ iv });
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
 
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
 
-  return `${encrypted.toString('hex')}${ivSearchStr}${iv.toString('hex')}}`;
+  return `${encrypted.toString('hex')}${ivSearchStr}${iv.toString('hex')}`;
 };
 
 const decrypt = (text, iv) => {
