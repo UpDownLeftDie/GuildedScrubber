@@ -1,0 +1,29 @@
+{
+  "name": "guilded-scrubber",
+  "version": "1.0.0",
+  "private": true,
+  "description": "guilded-scrubber",
+  "author": "Jared Kotoff",
+  "keywords": [
+    "gatsby"
+  ],
+  "scripts": {
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "gatsby": "^5.2.0",
+    "gatsby-plugin-sass": "^6.2.0",
+    "js-cookie": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sass": "^1.56.2",
+    "stream-browserify": "^3.0.0",
+    "uuid": "^9.0.0"
+  }
+}
