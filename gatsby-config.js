@@ -6,5 +6,5 @@ module.exports = {
     title: `Guilded Scrubber`,
     siteUrl: `https://www.guildedscrubber.com`,
   },
-  plugins: ['gatsby-plugin-sass'],
+  plugins: ['gatsby-plugin-sass', 'gatsby-plugin-netlify'],
 };
