@@ -2,9 +2,12 @@ import * as React from 'react';
 import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
-const ChannelListSelector = ({ teamChannels, decryptMode, deleteMode }) => {
-  const guildedScrubber = GuildedScrubber.getInstance();
-
+const ChannelListSelector = ({
+  userId,
+  teamChannels,
+  decryptMode,
+  deleteMode,
+}) => {
   const label = decryptMode
     ? 'Decrypt messages'
     : deleteMode
@@ -32,7 +35,7 @@ const ChannelListSelector = ({ teamChannels, decryptMode, deleteMode }) => {
       }
     }
 
-    guildedScrubber.ScrubChannels(items, decryptMode, deleteMode);
+    GuildedScrubber.ScrubChannels(userId, items, decryptMode, deleteMode);
   };
 
   const lists = Object.entries(teamChannels).map(([team, channels]) => {

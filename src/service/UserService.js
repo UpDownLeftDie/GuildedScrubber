@@ -10,7 +10,7 @@ export default class UserService {
     return user;
   }
 
-  async GetDMChannels() {
+  static async GetDMChannels() {
     let teamChannels = JSON.parse(localStorage.getItem('teamChannels') || '{}');
 
     const url = `/users/${this.userId}/channels`;

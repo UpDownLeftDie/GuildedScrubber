@@ -1,22 +1,23 @@
 import React from 'react';
 import { ListSelector } from '../components';
+import GuildedScrubber from '../GuildedScrubber';
 
 const TeamsListSelector = ({ teams, setTeamChannels }) => {
-  const onSubmit = async (items) => {
-    const initLength = items.length;
-    items = items.filter((item) => item !== 'dm');
-    const getDMs = initLength !== items.length;
+  const onSubmit = async (teams) => {
+    const initLength = teams.length;
+    teams = teams.filter((team) => team !== 'dm');
+    const getDMs = initLength !== teams.length;
 
-    if (getDMs) {
-      // guildedFetcher.GetDMChannels();
-    }
     // const teamChannels = await guildedFetcher.GetTeamChannelsFromTeams(items);
-    const teamChannels = [];
+    const teamChannels = await GuildedScrubber.GetAllTeamChannels(
+      teams,
+      getDMs,
+    );
+    console.log({ teamChannels });
     const filteredTeamChannels = Object.fromEntries(
       Object.entries(teamChannels).filter(([key]) => {
-        console.log(key, items, items.includes(key));
         if (getDMs && key === 'dm') return true;
-        return items.includes(key);
+        return teams.includes(key);
       }),
     );
     console.log({ filteredTeamChannels });

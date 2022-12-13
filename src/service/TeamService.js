@@ -1,10 +1,9 @@
 import ApiService from './ApiService';
 
 export default class TeamService {
-  async GetChannels(hmac, teamId) {
+  static async GetChannels(hmac, teamId) {
     const url = `/teams/${teamId}/channels`;
-    const res = await ApiService.FetchGuilded(hmac, url);
-    const { channels } = res;
+    const channels = await ApiService.FetchGuilded(hmac, url);
     return channels;
   }
 }

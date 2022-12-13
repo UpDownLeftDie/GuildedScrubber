@@ -91,7 +91,7 @@ const IndexPage = () => {
             setTeamChannels={setTeamChannels}
           />
         ) : currentPhase === PHASE.SET_OPTIONS ? (
-          <ChannelListSelector teamChannels={teamChannels} />
+          <ChannelListSelector userId={user.id} teamChannels={teamChannels} />
         ) : null}
       </div>
     </main>

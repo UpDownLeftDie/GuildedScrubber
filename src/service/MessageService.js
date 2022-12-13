@@ -1,7 +1,7 @@
 import ApiService from './ApiService';
 
 export default class MessageService {
-  async GetMessages(hmac, channelId, beforeDate, messageLimit) {
+  static async GetMessages(hmac, channelId, beforeDate, messageLimit) {
     const url = new URL(`/channels/${channelId}/messages`);
     url.searchParams.append('limit', messageLimit);
     if (beforeDate) url.searchParams.append('beforeDate', beforeDate);
@@ -11,12 +11,12 @@ export default class MessageService {
     return messages;
   }
 
-  async UpdateMessage(hmac, channelId, messageId, data) {
+  static async UpdateMessage(hmac, channelId, messageId, data) {
     const url = new URL(`/channels/${channelId}/messages/${messageId}`);
     return ApiService.FetchGuilded(hmac, url, 'PUT', data);
   }
 
-  async DeleteMessage(hmac, channelId, messageId) {
+  static async DeleteMessage(hmac, channelId, messageId) {
     const url = new URL(`/channels/${channelId}/messages/${messageId}`);
     return ApiService.FetchGuilded(hmac, url, 'DELETE');
   }

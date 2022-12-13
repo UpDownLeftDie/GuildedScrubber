@@ -14,7 +14,7 @@ const LoadUser = ({
   const loadUser = async () => {
     setIsLoading(true);
     Cookies.set('guilded-hmac', hmac);
-    const user = await GuildedScrubber.fetchApi('user');
+    const user = await GuildedScrubber.FetchApi('user');
     setUser(user);
     setIsLoading(false);
   };

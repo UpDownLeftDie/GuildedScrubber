@@ -5,7 +5,7 @@ const algorithm = 'aes-256-ctr';
 const ivSearchStr = ' IV: ';
 
 export default class GuildedScrubber {
-  static async fetchApi(route, method = 'GET', body) {
+  static async FetchApi(route, method = 'GET', body) {
     const hmac = Cookies.get('guilded-hmac');
     return fetch(`/api/${route}`, {
       method,
@@ -16,13 +16,14 @@ export default class GuildedScrubber {
     }).then((res) => res.json());
   }
 
-  static async GetAllTeamChannels(hmac, teams) {
+  static async GetAllTeamChannels(teams) {
     let teamChannels = JSON.parse(localStorage.getItem('teamChannels') || '{}');
 
     for (const team of teams) {
       if (teamChannels[team]?.length > 0) continue;
-      const { channels } = await GuildedScrubber.fetchApi(`team/${team}`);
-      teamChannels[team] = channels;
+      const res = await GuildedScrubber.FetchApi(`team/${team}`);
+      console.log({ res, team });
+      teamChannels[team] = res.channels;
 
       localStorage.setItem('teamChannels', JSON.stringify(teamChannels));
     }
