@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Input, Button } from '../atoms';
-import { TeamsListSelector, ChannelListSelector } from '../components';
-import GuildedFetcher from '../GuildedFetcher';
-import GuildedScrubber from '../GuildedScrubber';
+import { LoadUser, TeamsListSelector, ChannelListSelector } from '../molecules';
 
 const pageStyles = {
   color: '#ececee',
   padding: 96,
-  fontFamily: '-apple-system, Roboto, sans-serif, serif',
+  fontFamily: 'Roboto, sans-serif, serif',
   textAlign: 'center',
   maxWidth: 900,
   display: 'flex',
@@ -18,63 +15,34 @@ const headingStyles = {
   marginTop: 0,
   marginBottom: 64,
 };
-const headingAccentStyles = {
+const sloganStyles = {
   color: '#f5c400',
   fontSize: '1.3rem',
   fontStyle: 'italic',
-};
-const paragraphStyles = {
-  marginBottom: 48,
+  display: 'inline-block',
 };
 
-const listStyles = {
-  marginBottom: 96,
-  paddingLeft: 0,
-};
-const listItemStyles = {
-  fontWeight: 300,
-  fontSize: 24,
-  maxWidth: 560,
-  marginBottom: 30,
-};
+const pageContentStyles = {};
 
-const linkStyle = {
-  color: '#8954A8',
-  fontWeight: 'bold',
-  fontSize: 16,
-  verticalAlign: '5%',
+const PHASE = {
+  LOAD_USER: 1,
+  LOAD_CHANNELS: 2,
+  SET_OPTIONS: 3,
 };
-
-const links = [
-  {
-    text: 'Tutorial',
-    url: 'https://www.gatsbyjs.com/docs/tutorial/',
-    description:
-      "A great place to get started if you're new to web development. Designed to guide you through setting up your first Gatsby site.",
-    color: '#E95800',
-  },
-];
-
-const slogans = [
-  'Goodbye Guilded!',
-  '#GetGuilded out of your life!',
-  'Gut Guilded!',
-  'Get rid of Guilded!',
-  'Gutterball Guilded!',
-  'Guildead!',
-];
 
 const IndexPage = () => {
-  let guildedFetcher;
-  let guildedScrubber;
-  const [isLoading, setIsLoading] = useState(false);
-  const [guildedCookie, _setGuildedCookie] = useState(
-    Cookies.get('guilded-cookie') || '',
-  );
-  const setGuildedCookie = (e) => {
-    const guildedCookie = e.target.value;
-    _setGuildedCookie(guildedCookie);
-    Cookies.set('guilded-cookie', guildedCookie);
+  const [slogan, setSlogan] = useState('');
+  const [currentPhase, _setPhase] = useState(PHASE.LOAD_USER);
+  const setPhase = (phase) => {
+    if (currentPhase < phase) {
+      _setPhase(phase);
+    }
+  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [hmac, _setHmac] = useState(Cookies.get('guilded-hmac') || '');
+  const setHmac = (e) => {
+    const hmac = e.target.value;
+    _setHmac(hmac);
   };
   const [user, setUser] = useState(null);
   const [teamChannels, setTeamChannels] = useState(null);
@@ -82,19 +50,21 @@ const IndexPage = () => {
   const [decryptMode, setDecryptMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
 
-  const load = async () => {
-    setIsLoading(true);
-    guildedFetcher = GuildedFetcher.getInstance(guildedCookie);
-    const user = await guildedFetcher.LoadUser();
-    setIsLoading(false);
-    setUser(user);
-    console.log({ userid: user.id });
-    guildedScrubber = GuildedScrubber.getInstance(
-      guildedFetcher,
-      user.id,
-      'abcdefghijklmnopqrstuvwxyzABCDEF',
-    );
-  };
+  useEffect(() => {
+    import('/static/slogans.json').then((slogans) => {
+      const slogan = slogans[Math.floor(Math.random() * slogans.length)];
+      setSlogan(`— ${slogan} 🎉🎉🎉`);
+      setIsLoading(false); // important to cause rerender for button
+    });
+  }, []);
+
+  useEffect(() => {
+    if (user?.teams && !teamChannels) setPhase(PHASE.LOAD_CHANNELS);
+  }, [user]);
+
+  useEffect(() => {
+    if (teamChannels) setPhase(PHASE.SET_OPTIONS);
+  }, [teamChannels]);
 
   return (
     <main style={pageStyles}>
@@ -102,34 +72,28 @@ const IndexPage = () => {
         <h1>
           Guilded Scrubber
           <br />
-          <span style={headingAccentStyles}>
-            — {slogans[Math.floor(Math.random() * slogans.length)]} 🎉🎉🎉
-          </span>
+          <span style={sloganStyles}>{slogan}</span>
         </h1>
-        <a href="https://stackoverflow.com/a/3177718">
-          This site must be ran with CORS disabled
-        </a>
       </div>
-      <Input
-        label="Guilded hmac_signed_session"
-        value={guildedCookie}
-        onChange={setGuildedCookie}
-        placeholder="b35f6d54a296b2b37e6b9ecf8e63a5bf08b287278579865eae467632927162dcd746912e7ae108bb7736e594d38e.09d6921215c6fec2c44d0c6d5b1b48ac.f890adc436fb9474fd423e0f3ca34412219f96c55a79539e86297052da9ecd0c"
-      />
-      <Button
-        disabled={!guildedCookie || !!user?.id || isLoading}
-        text={!!user?.id ? `Loaded: ${user.name}` : 'Load...'}
-        onClick={load}
-      />
-      {user?.teams && !teamChannels ? (
-        <TeamsListSelector
-          teams={user.teams}
-          setTeamChannels={setTeamChannels}
-        />
-      ) : null}
-      {teamChannels ? (
-        <ChannelListSelector teamChannels={teamChannels} />
-      ) : null}
+      <div style={pageContentStyles}>
+        {currentPhase === PHASE.LOAD_USER ? (
+          <LoadUser
+            hmac={hmac}
+            setHmac={setHmac}
+            user={user}
+            setUser={setUser}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+          />
+        ) : currentPhase === PHASE.LOAD_CHANNELS ? (
+          <TeamsListSelector
+            teams={user.teams}
+            setTeamChannels={setTeamChannels}
+          />
+        ) : currentPhase === PHASE.SET_OPTIONS ? (
+          <ChannelListSelector teamChannels={teamChannels} />
+        ) : null}
+      </div>
     </main>
   );
 };

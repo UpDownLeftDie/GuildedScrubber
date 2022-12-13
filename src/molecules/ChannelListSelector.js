@@ -1,6 +1,5 @@
 import * as React from 'react';
-import ListSelector from './ListSelector';
-import GuildedFetcher from '../GuildedFetcher';
+import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
 const ChannelListSelector = ({ teamChannels, decryptMode, deleteMode }) => {

@@ -1,20 +1,17 @@
 import React from 'react';
-import ListSelector from './ListSelector';
-import GuildedFetcher from '../GuildedFetcher';
+import { ListSelector } from '../components';
 
 const TeamsListSelector = ({ teams, setTeamChannels }) => {
-  const guildedFetcher = GuildedFetcher.getInstance();
-
   const onSubmit = async (items) => {
     const initLength = items.length;
     items = items.filter((item) => item !== 'dm');
     const getDMs = initLength !== items.length;
 
     if (getDMs) {
-      guildedFetcher.GetDMChannels();
+      // guildedFetcher.GetDMChannels();
     }
-    const teamChannels = await guildedFetcher.GetTeamChannelsFromTeams(items);
-
+    // const teamChannels = await guildedFetcher.GetTeamChannelsFromTeams(items);
+    const teamChannels = [];
     const filteredTeamChannels = Object.fromEntries(
       Object.entries(teamChannels).filter(([key]) => {
         console.log(key, items, items.includes(key));

@@ -1,6 +1,13 @@
 import * as React from 'react';
 
-const Input = ({ label, placeholder, value, onChange, maxLength = 190 }) => {
+const Input = ({
+  label,
+  placeholder,
+  value,
+  onChange,
+  maxLength,
+  disabled,
+}) => {
   return (
     <>
       <label htmlFor={`${label}-input`}>{label}: </label>
@@ -11,6 +18,7 @@ const Input = ({ label, placeholder, value, onChange, maxLength = 190 }) => {
         type="text"
         onChange={onChange}
         maxLength={maxLength}
+        disabled={disabled}
       />
     </>
   );
