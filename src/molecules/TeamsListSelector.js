@@ -3,20 +3,18 @@ import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
 const TeamsListSelector = ({ teams, setTeamChannels }) => {
-  const onSubmit = async (teams) => {
-    const initLength = teams.length;
-    teams = teams.filter((team) => team !== 'dm');
-    const getDMs = initLength !== teams.length;
+  const onSubmit = async ({ Teams }) => {
+    const shouldFetchDMs = Teams.has('dm');
+    Teams.delete('dm');
 
-    // const teamChannels = await guildedFetcher.GetTeamChannelsFromTeams(items);
     const teamChannels = await GuildedScrubber.GetAllTeamChannels(
       teams,
-      getDMs,
+      shouldFetchDMs,
     );
     console.log({ teamChannels });
     const filteredTeamChannels = Object.fromEntries(
       Object.entries(teamChannels).filter(([key]) => {
-        if (getDMs && key === 'dm') return true;
+        if (shouldFetchDMs && key === 'dm') return true;
         return teams.includes(key);
       }),
     );
@@ -24,10 +22,16 @@ const TeamsListSelector = ({ teams, setTeamChannels }) => {
     setTeamChannels(filteredTeamChannels);
   };
 
-  teams.unshift({ name: 'DMs', id: 'dm' });
+  // teams.unshift({ name: 'DMs', id: 'dm' });
+  const teamsCollectionArray = [
+    {
+      section: 'Teams',
+      items: teams,
+    },
+  ];
   return (
     <ListSelector
-      items={teams}
+      itemCollectionsArray={teamsCollectionArray}
       groupName="Teams"
       submitLabel="Load Channels"
       onSubmit={onSubmit}
