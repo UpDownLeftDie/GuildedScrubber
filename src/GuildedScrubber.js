@@ -16,18 +16,26 @@ export default class GuildedScrubber {
     }).then((res) => res.json());
   }
 
-  static async GetAllTeamChannels(teams) {
-    let teamChannels = JSON.parse(localStorage.getItem('teamChannels') || '{}');
+  static async GetAllTeams(teamIds, shouldFetchDMs = false) {
+    let teams = JSON.parse(localStorage.getItem('teams') || '{}');
 
-    for (const team of teams) {
-      if (teamChannels[team]?.length > 0) continue;
-      const res = await GuildedScrubber.FetchApi(`team/${team}`);
-      console.log({ res, team });
-      teamChannels[team] = res.channels;
+    for (const teamId of teamIds) {
+      if (teams[teamId]?.channels?.length > 0) continue;
+      const team = await GuildedScrubber.FetchApi(`team/${teamId}`);
+      teams[teamId] = team;
 
-      localStorage.setItem('teamChannels', JSON.stringify(teamChannels));
+      localStorage.setItem('teams', JSON.stringify(teams));
     }
-    return JSON.parse(localStorage.getItem('teamChannels'));
+    teams = JSON.parse(localStorage.getItem('teams'));
+
+    const filteredTeams = Object.fromEntries(
+      Object.entries(teams).filter(([teamId]) => {
+        return teamIds.includes(teamId);
+      }),
+    );
+    console.log({ filteredTeams });
+
+    return filteredTeams;
   }
 
   static async ScrubChannels(userId, channelIds, decryptMode, deleteMode) {

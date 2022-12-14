@@ -1,13 +1,11 @@
 import * as React from 'react';
+import { ContentWithHeader } from '../templates';
 import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
-const ChannelListSelector = ({
-  userId,
-  teamChannels,
-  decryptMode,
-  deleteMode,
-}) => {
+const ChannelListSelector = ({ userId, teams, decryptMode, deleteMode }) => {
+  const sectionNameSingular = 'Channel';
+  const sectionName = `${sectionNameSingular}s`;
   const label = decryptMode
     ? 'Decrypt messages'
     : deleteMode
@@ -38,22 +36,23 @@ const ChannelListSelector = ({
     GuildedScrubber.ScrubChannels(userId, items, decryptMode, deleteMode);
   };
 
-  const lists = Object.entries(teamChannels).map(([team, channels]) => {
-    console.log({ team, channels });
-    return (
-      <div key={team}>
-        <span>{team}</span>
-        <ListSelector
-          items={channels}
-          groupName={team}
-          submitLabel={label}
-          onSubmit={onSubmit}
-        />
-      </div>
-    );
-  });
+  function getChannelCollections(teams) {
+    return Object.values(teams).map((team) => {
+      return { sectionName: team.name, items: team.channels };
+    });
+  }
 
-  return <div>{lists}</div>;
+  const channelCollections = getChannelCollections(teams);
+  return (
+    <ContentWithHeader headerText={'Channels'}>
+      <ListSelector
+        itemCollectionsArray={channelCollections}
+        submitLabel={label}
+        onSubmit={onSubmit}
+        listName={sectionName}
+      />
+    </ContentWithHeader>
+  );
 };
 
 export default ChannelListSelector;

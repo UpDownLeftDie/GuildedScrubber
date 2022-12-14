@@ -1,53 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from '../atoms';
 
 const style = {
   textAlign: 'left',
-  display: 'flex',
-  flexDirection: 'column',
 };
 
 const selectAllStyles = {
   fontWeight: 'bold',
-  marginBottom: 10,
+  marginBottom: 5,
+};
+
+const selectionListStyles = {
+  display: 'flex',
+  flexDirection: 'column',
+  marginBottom: 20,
+};
+
+const selectionBoxStyles = {
+  marginLeft: 15,
 };
 
 const ListSelector = ({
   itemCollectionsArray,
   onSubmit = () => {},
   submitLabel = 'Submit',
+  listName = '',
 }) => {
   const [isAllChecked, setIsAllChecked] = useState(new Set());
   const [isChecked, setIsChecked] = useState(() => {
     let sections = {};
     itemCollectionsArray.forEach(
-      (collection) => (sections[collection.section] = new Set()),
+      (collection) => (sections[collection.sectionName] = new Set()),
     );
     return sections;
   });
+  const [checkedCount, setCheckedCount] = useState(0);
 
-  const handleSelectAll = (section) => {
-    if (!isAllChecked.has(section)) {
+  const handleSelectAll = (sectionName) => {
+    if (!isAllChecked.has(sectionName)) {
       const { items } = itemCollectionsArray.find(
-        (collection) => collection.section === section,
+        (collection) => collection.sectionName === sectionName,
       );
-      items.forEach((item) => isChecked[section].add(item.id));
-      isAllChecked.add(section);
+      items.forEach((item) => isChecked[sectionName].add(item.id));
+      isAllChecked.add(sectionName);
     } else {
-      isChecked[section].clear();
-      isAllChecked.delete(section);
+      isChecked[sectionName].clear();
+      isAllChecked.delete(sectionName);
     }
 
     setIsChecked({ ...isChecked });
     setIsAllChecked(new Set(Array.from(isAllChecked)));
   };
 
-  const handleClick = (e, section) => {
+  const handleClick = (e, sectionName) => {
     const { id, checked } = e.target;
 
     if (!checked) {
-      isChecked[section].delete(id);
+      isChecked[sectionName].delete(id);
     } else {
-      isChecked[section].add(id);
+      isChecked[sectionName].add(id);
     }
 
     setIsChecked({ ...isChecked });
@@ -58,42 +69,55 @@ const ListSelector = ({
     onSubmit(isChecked);
   };
 
+  useEffect(() => {
+    let checkedTotal = 0;
+    Object.values(isChecked).forEach((checkedSet) => {
+      checkedTotal += checkedSet.size;
+    });
+
+    setCheckedCount(checkedTotal);
+  }, [isChecked]);
+
   function convertCollectionArray() {
     const list = itemCollectionsArray.reduce((list, collection) => {
-      const { section, items } = collection;
-
+      const { sectionName, items } = collection;
+      const name = `${sectionName.split(' ').join('')}`;
+      const selectAllName = `selectAll-${name}`;
       const selectAll = (
-        <span key={`selectAll-${section}`} style={selectAllStyles}>
+        <div key={selectAllName} style={selectAllStyles}>
           <input
-            id="selectAll"
             type="checkbox"
-            name={`selectAll-${section}`}
-            onChange={() => handleSelectAll(section)}
-            checked={setIsAllChecked[section]}
+            name={selectAllName}
+            onChange={() => handleSelectAll(sectionName)}
+            checked={setIsAllChecked[sectionName]}
           />
-          <label htmlFor="selectAll">Select All {section}</label>
-        </span>
+          <label htmlFor={selectAllName}>Select All - {sectionName}</label>
+        </div>
       );
 
-      const sectionList = items.map((item) => {
+      const sectionListItems = items.map((item) => {
         const { name, id } = item;
-
         return (
-          <span key={`${id}-key`}>
+          <span key={id} style={selectionBoxStyles}>
             <input
               id={id}
               type="checkbox"
-              name={section}
+              name={sectionName}
               value={id}
-              onChange={(e) => handleClick(e, section)}
-              checked={isChecked[section].has(id)}
+              onChange={(e) => handleClick(e, sectionName)}
+              checked={isChecked[sectionName].has(id)}
             />
             <label htmlFor={id}>{name}</label>
           </span>
         );
       });
+      const selectionList = (
+        <div key={name} style={selectionListStyles}>
+          {sectionListItems}
+        </div>
+      );
 
-      return [...list, selectAll, ...sectionList];
+      return [...list, selectAll, selectionList];
     }, []);
 
     return list;
@@ -104,7 +128,13 @@ const ListSelector = ({
     <div style={style}>
       <form style={style} onSubmit={handleSubmit}>
         {list}
-        <input type="submit" value={submitLabel} />
+        <Button
+          disabled={checkedCount < 1}
+          type="submit"
+          text={`${submitLabel} from ${checkedCount} ${
+            checkedCount > 1 ? `${listName}s` : listName
+          }`}
+        />
       </form>
     </div>
   );

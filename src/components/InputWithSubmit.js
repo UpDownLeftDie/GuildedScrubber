@@ -15,7 +15,12 @@ const InputWithSubmit = (props) => {
     inputDisabled = false,
     inputMaxLength,
   } = props;
-  const { submitDisabled = false, submitText, submitOnClick } = props;
+  const {
+    submitDisabled = false,
+    submitText,
+    submitOnClick,
+    submitFlavor,
+  } = props;
 
   return (
     <div style={style}>
@@ -31,6 +36,7 @@ const InputWithSubmit = (props) => {
         disabled={submitDisabled}
         text={submitText}
         onClick={submitOnClick}
+        flavor={submitFlavor}
       />
     </div>
   );

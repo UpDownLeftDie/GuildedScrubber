@@ -4,16 +4,18 @@ import { LoadUser, TeamsListSelector, ChannelListSelector } from '../molecules';
 
 const pageStyles = {
   color: '#ececee',
-  padding: 96,
+  padding: '96px 0',
+  marginLeft: 'auto',
+  marginRight: 'auto',
   fontFamily: 'Roboto, sans-serif, serif',
   textAlign: 'center',
-  maxWidth: 900,
+  maxWidth: 600,
   display: 'flex',
   flexDirection: 'column',
 };
 const headingStyles = {
   marginTop: 0,
-  marginBottom: 64,
+  marginBottom: 20,
 };
 const sloganStyles = {
   color: '#f5c400',
@@ -32,23 +34,25 @@ const PHASE = {
 
 const IndexPage = () => {
   const [slogan, setSlogan] = useState('');
-  const [currentPhase, _setPhase] = useState(PHASE.LOAD_USER);
-  const setPhase = (phase) => {
+  const [currentPhase, setPhase] = useState(PHASE.LOAD_USER);
+  const handlePhase = (phase) => {
     if (currentPhase < phase) {
-      _setPhase(phase);
+      setPhase(phase);
     }
   };
   const [isLoading, setIsLoading] = useState(true);
-  const [hmac, _setHmac] = useState(Cookies.get('guilded-hmac') || '');
-  const setHmac = (e) => {
+  const [hmac, setHmac] = useState(Cookies.get('guilded-hmac') || '');
+  const handleHmac = (e) => {
     const hmac = e.target.value;
-    _setHmac(hmac);
+    setHmac(hmac);
   };
   const [user, setUser] = useState(null);
-  const [teamChannels, setTeamChannels] = useState(null);
-  const [passphrase, setPassphrase] = useState('');
-  const [decryptMode, setDecryptMode] = useState(false);
-  const [deleteMode, setDeleteMode] = useState(false);
+  const [teams, setTeams] = useState(null);
+  // const [beforeDate, setBeforeDate] = useState(null);
+  // const [afterDate, setAfterDate] = useState(null);
+  // const [passphrase, setPassphrase] = useState('');
+  // const [decryptMode, setDecryptMode] = useState(false);
+  // const [deleteMode, setDeleteMode] = useState(false);
 
   useEffect(() => {
     import('/static/slogans.json').then((slogans) => {
@@ -59,12 +63,12 @@ const IndexPage = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.teams && !teamChannels) setPhase(PHASE.LOAD_CHANNELS);
-  }, [user]);
+    if (user?.teams && !teams) handlePhase(PHASE.LOAD_CHANNELS);
+  }, [user, teams]);
 
   useEffect(() => {
-    if (teamChannels) setPhase(PHASE.SET_OPTIONS);
-  }, [teamChannels]);
+    if (teams) handlePhase(PHASE.SET_OPTIONS);
+  }, [teams]);
 
   return (
     <main style={pageStyles}>
@@ -79,19 +83,16 @@ const IndexPage = () => {
         {currentPhase === PHASE.LOAD_USER ? (
           <LoadUser
             hmac={hmac}
-            setHmac={setHmac}
+            setHmac={handleHmac}
             user={user}
             setUser={setUser}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
           />
         ) : currentPhase === PHASE.LOAD_CHANNELS ? (
-          <TeamsListSelector
-            teams={user.teams}
-            setTeamChannels={setTeamChannels}
-          />
+          <TeamsListSelector user={user} setTeams={setTeams} />
         ) : currentPhase === PHASE.SET_OPTIONS ? (
-          <ChannelListSelector userId={user.id} teamChannels={teamChannels} />
+          <ChannelListSelector userId={user.id} teams={teams} />
         ) : null}
       </div>
     </main>

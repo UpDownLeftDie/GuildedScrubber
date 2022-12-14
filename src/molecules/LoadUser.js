@@ -30,8 +30,9 @@ const LoadUser = ({
       }
       inputDisabled={!!user?.id || isLoading}
       submitDisabled={hmac?.length !== 190 || !!user?.id || isLoading}
-      submitText={!!user?.id ? `Loaded: ${user.name}` : 'Load...'}
+      submitText="Load User"
       submitOnClick={loadUser}
+      submitFlavor="gold"
     />
   );
 };

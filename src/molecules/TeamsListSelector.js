@@ -1,41 +1,42 @@
 import React from 'react';
+import { ContentWithHeader } from '../templates';
 import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
-const TeamsListSelector = ({ teams, setTeamChannels }) => {
-  const onSubmit = async ({ Teams }) => {
-    const shouldFetchDMs = Teams.has('dm');
-    Teams.delete('dm');
+const TeamsListSelector = ({ user, setTeams }) => {
+  const sectionNameSingular = 'Team';
+  const sectionName = `${sectionNameSingular}s`;
+  const onSubmit = async (sections) => {
+    let teamIds = sections[sectionName];
+    const shouldFetchDMs = teamIds.has('dm');
+    teamIds.delete('dm');
+    teamIds = Array.from(teamIds);
+    const teams = await GuildedScrubber.GetAllTeams(teamIds, shouldFetchDMs);
 
-    const teamChannels = await GuildedScrubber.GetAllTeamChannels(
-      teams,
-      shouldFetchDMs,
-    );
-    console.log({ teamChannels });
-    const filteredTeamChannels = Object.fromEntries(
-      Object.entries(teamChannels).filter(([key]) => {
-        if (shouldFetchDMs && key === 'dm') return true;
-        return teams.includes(key);
-      }),
-    );
-    console.log({ filteredTeamChannels });
-    setTeamChannels(filteredTeamChannels);
+    const fullTeams = Object.entries(teams).reduce((acc, [teamId, team]) => {
+      const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
+      acc[teamId] = { ...teamInfo, ...team };
+      return acc;
+    }, {});
+
+    setTeams(fullTeams);
   };
 
-  // teams.unshift({ name: 'DMs', id: 'dm' });
   const teamsCollectionArray = [
     {
-      section: 'Teams',
-      items: teams,
+      sectionName,
+      items: user.teams,
     },
   ];
   return (
-    <ListSelector
-      itemCollectionsArray={teamsCollectionArray}
-      groupName="Teams"
-      submitLabel="Load Channels"
-      onSubmit={onSubmit}
-    />
+    <ContentWithHeader headerText={'Teams'}>
+      <ListSelector
+        itemCollectionsArray={teamsCollectionArray}
+        submitLabel="Load Channels"
+        listName={sectionNameSingular}
+        onSubmit={onSubmit}
+      />
+    </ContentWithHeader>
   );
 };
 
