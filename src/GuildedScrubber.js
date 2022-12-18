@@ -4,16 +4,53 @@ import fetch from 'node-fetch';
 const algorithm = 'aes-256-ctr';
 const ivSearchStr = ' IV: ';
 
+const CHANNEL_TYPES = {
+  ANNOUNCEMENT: 'announcement',
+  CHAT: 'chat',
+  DOC: 'doc',
+  EVENT: 'event',
+  FORUM: 'forum',
+  LIST: 'list',
+  MEDIA: 'media',
+  STREAM: 'stream',
+  VOICE: 'voice',
+};
+
+const CHAT_CHANNELS = [
+  CHANNEL_TYPES.CHAT,
+  CHANNEL_TYPES.STREAM,
+  CHANNEL_TYPES.VOICE,
+];
+
 export default class GuildedScrubber {
-  static async FetchApi(route, method = 'GET', body) {
+  static MODES = {
+    ENCRYPT: 'encrypt',
+    DECRYPT: 'decrypt',
+    DELETE: 'delete',
+  };
+  static async FetchApi({ route, method = 'GET', headers, data }) {
     const hmac = Cookies.get('guilded-hmac');
+    console.log({ data, ...(data ? { body: JSON.stringify(data) } : {}) });
     return fetch(`/api/${route}`, {
       method,
       headers: {
+        ...headers,
         hmac,
-        'content-type': 'application/json',
       },
-    }).then((res) => res.json());
+      ...(data ? { body: JSON.stringify(data) } : {}),
+    }).then((res) => {
+      if (res.ok) {
+        try {
+          return res.json();
+        } catch (error) {
+          return res.text();
+        }
+      }
+    });
+  }
+
+  static async GetUser() {
+    return await GuildedScrubber.FetchApi({ route: 'user' });
   }
 
   static async GetAllTeams(teamIds, shouldFetchDMs = false) {
@@ -21,7 +58,7 @@ export default class GuildedScrubber {
 
     for (const teamId of teamIds) {
       if (teams[teamId]?.channels?.length > 0) continue;
-      const team = await GuildedScrubber.FetchApi(`team/${teamId}`);
+      const team = await GuildedScrubber.FetchApi({ route: `team/${teamId}` });
       teams[teamId] = team;
 
       localStorage.setItem('teams', JSON.stringify(teams));
@@ -33,28 +70,65 @@ export default class GuildedScrubber {
         return teamIds.includes(teamId);
       }),
     );
-    console.log({ filteredTeams });
 
     return filteredTeams;
   }
 
-  static async ScrubChannels(userId, channelIds, decryptMode, deleteMode) {
-    for (const channelId of channelIds) {
-      await this.ScrubChannel(userId, channelId, decryptMode, deleteMode);
+  static async ScrubChannels(
+    userId,
+    channels,
+    mode,
+    passphrase,
+    beforeDate,
+    afterDate,
+    setChannelsCount,
+    setAction,
+  ) {
+    const beforeDateStr =
+      beforeDate && encodeURIComponent(beforeDate.toISOString());
+    const afterDateStr =
+      afterDate && encodeURIComponent(afterDate.toISOString());
+    for (const [i, channel] of channels.entries()) {
+      console.log({ i, channelId: channel.id });
+      setChannelsCount(i + 1);
+      await this.ScrubChannel({
+        userId,
+        channelId: channel.id,
+        mode,
+        passphrase,
+        beforeDate: beforeDateStr,
+        afterDate: afterDateStr,
+        setAction,
+      });
     }
   }
 
-  static async ScrubChannel(userId, channelId, decryptMode, deleteMode) {
+  static async ScrubChannel({
+    userId,
+    channelId,
+    mode,
+    passphrase,
+    beforeDate,
+    afterDate,
+    setAction,
+  }) {
+    const messageLimit = 2;
     let messages = [];
-    let beforeDate = null;
-    const messageLimit = 100;
+    let totalMessageCount = 0;
+    const deleteMode = mode === this.MODES.DELETE;
+    const decryptMode = mode === this.MODES.DECRYPT;
     do {
-      messages = await this.guildedFetcher.GetMessages(
-        channelId,
-        beforeDate,
-        messageLimit,
-      );
-      if (!messages) break;
+      setAction('Loading messages');
+      console.log('Loading messages', { channelId });
+      messages = await GuildedScrubber.FetchApi({
+        route: `channel/${channelId}/messages`,
+        headers: {
+          ...(beforeDate && { 'before-date': beforeDate }),
+          ...(afterDate && { 'after-date': afterDate }),
+          ...(messageLimit && { 'message-limit': messageLimit }),
+        },
+      });
+      if (!messages?.length) break;
       beforeDate = messages[messages.length - 1].createdAt;
 
       const filteredMessages = filterMessages(
@@ -62,42 +136,56 @@ export default class GuildedScrubber {
         messages,
         decryptMode || deleteMode,
       );
-      console.log({ filteredMessages });
       if (!filteredMessages?.length) continue;
+      totalMessageCount += filteredMessages.length;
 
       const texts = getTextFromMessages(filteredMessages);
-      console.log({ texts });
       let newMessages;
       if (decryptMode) {
-        newMessages = decryptTexts(texts, this.secretKey);
+        setAction('Decrypting messages');
+        newMessages = decryptTexts(texts, passphrase);
       } else {
-        newMessages = encryptTexts(texts, this.secretKey, deleteMode);
+        setAction(
+          deleteMode ? 'Prepping message for delete' : 'Encrypting messages',
+        );
+        newMessages = encryptTexts(texts, passphrase);
       }
-      await this.UpdateMessages(channelId, newMessages);
-      if (deleteMode) this.DeleteMessages(channelId, newMessages);
+
+      await GuildedScrubber.UpdateMessages(channelId, newMessages);
+      if (deleteMode) {
+        setAction('Deleting messages');
+        await GuildedScrubber.DeleteMessages(channelId, newMessages);
+      }
     } while (messages?.length >= messageLimit);
   }
 
-  async UpdateMessages(channelId, messages) {
+  static async UpdateMessages(channelId, messages) {
     const messageIds = Object.keys(messages);
     const messageTexts = Object.values(messages);
     for (let i = 0; i < messageIds.length; i++) {
       const data = buildMessageContent(messageTexts[i]);
-      await this.guildedFetcher.UpdateMessage(channelId, messageIds[i], data);
+      const test = await GuildedScrubber.FetchApi({
+        route: `channel/${channelId}/message/${messageIds[i]}`,
+        method: 'PUT',
+        data,
+      });
+      console.log('adslkjsdlfkasdlkfhasjkfhds', { test, channelId, i });
     }
   }
 
-  async DeleteMessages(channelId, messages) {
+  static async DeleteMessages(channelId, messages) {
     const messageIds = Object.keys(messages);
     for (let i = 0; i < messageIds.length; i++) {
-      await this.guildedFetcher.DeleteMessage(channelId, messageIds[i]);
+      return await GuildedScrubber.FetchApi({
+        route: `channel/${channelId}/message/${messageIds[i]}`,
+        method: 'DELETE',
+      });
     }
   }
 }
 
 function filterMessages(userId, messages, includeEncryptedMessages = false) {
   const temp = messages.filter((message) => message.createdBy === userId);
-  console.log(temp, includeEncryptedMessages, userId);
   if (includeEncryptedMessages) return temp;
   return temp.filter((message) => {
     const text = findTextInNodes(message.content.document.nodes);
@@ -144,9 +232,7 @@ function encryptTexts(texts, secretKey, deleteMode = false) {
 
 function encrypt(text, secretKey) {
   const iv = crypto.randomBytes(16);
-  console.log({ iv });
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
-
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
 
   return `${encrypted.toString('hex')}${ivSearchStr}${iv.toString('hex')}`;

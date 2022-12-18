@@ -5,19 +5,30 @@ const Input = ({
   placeholder,
   value,
   onChange,
+  onBlur,
   maxLength,
+  minLength,
   disabled,
+  type = 'text',
 }) => {
+  const handleOnChange = (e) => {
+    const value = e.target.value;
+    onChange(value);
+  };
+
+  const forId = `${label.split(' ').join('')}-input`;
   return (
     <>
-      <label htmlFor={`${label}-input`}>{label}: </label>
+      <label htmlFor={forId}>{label}: </label>
       <input
-        id={`${label}-input`}
+        id={forId}
         value={value}
         placeholder={placeholder}
-        type="text"
-        onChange={onChange}
+        type={type}
+        onChange={handleOnChange}
+        onBlur={onBlur}
         maxLength={maxLength}
+        minLength={minLength}
         disabled={disabled}
       />
     </>

@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 const API_URL = 'https://www.guilded.gg/api';
 
 export default class ApiService {
-  static async FetchGuilded(hmac, url, method = 'GET', data) {
+  static async FetchGuilded({ hmac, url, method = 'GET', body }) {
     const res = await retryFetch(
       `${API_URL}${url}`,
       {
@@ -20,7 +20,7 @@ export default class ApiService {
           'sec-fetch-mode': 'cors',
           'sec-fetch-site': 'none',
         },
-        ...(data ? { body: JSON.stringify(data) } : {}),
+        body,
       },
       10,
     ).catch((err) => console.error(err));
@@ -35,8 +35,8 @@ async function retryFetch(
   url,
   fetchOptions = {},
   retries = 5,
-  retryDelay = 5000,
-  timeout = 60000,
+  retryDelay = 30000,
+  timeout,
 ) {
   return new Promise((resolve, reject) => {
     // check for timeout
@@ -45,9 +45,15 @@ async function retryFetch(
     const wrapper = (n) => {
       fetch(url, fetchOptions)
         .then(async (res) => {
+          console.log({ status: res.status });
           if (res.status === 429) {
-            await delay(retryDelay);
-            wrapper(--n);
+            console.log('retrying...', { n, url });
+            if (n > 0) {
+              await delay(retryDelay);
+              wrapper(--n);
+            } else {
+              reject(new Error(res.statusText));
+            }
           }
 
           resolve(res);
@@ -62,6 +68,6 @@ async function retryFetch(
         });
     };
 
-    wrapper(retries);
+    return wrapper(retries);
   });
 }

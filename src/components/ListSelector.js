@@ -25,6 +25,8 @@ const ListSelector = ({
   onSubmit = () => {},
   submitLabel = 'Submit',
   listName = '',
+  isLoading,
+  forFrom = 'from',
 }) => {
   const [isAllChecked, setIsAllChecked] = useState(new Set());
   const [isChecked, setIsChecked] = useState(() => {
@@ -64,9 +66,23 @@ const ListSelector = ({
     setIsChecked({ ...isChecked });
   };
 
-  const handleSubmit = (e) => {
+  const handleOnSubmit = (e) => {
     e.preventDefault();
-    onSubmit(isChecked);
+    onSubmit(convertCheckedToObjects(isChecked));
+  };
+  const convertCheckedToObjects = (isChecked) => {
+    const checkedArray = [];
+    Object.entries(isChecked).forEach(([sectionName, ids]) => {
+      const section = itemCollectionsArray.find(
+        (collection) => collection.sectionName === sectionName,
+      );
+      ids.forEach((id) => {
+        const item = section.items.find((item) => item.id === id);
+        item.parentName = sectionName;
+        checkedArray.push(item);
+      });
+    });
+    return checkedArray;
   };
 
   useEffect(() => {
@@ -126,12 +142,12 @@ const ListSelector = ({
   let list = convertCollectionArray();
   return (
     <div style={style}>
-      <form style={style} onSubmit={handleSubmit}>
+      <form style={style} onSubmit={handleOnSubmit}>
         {list}
         <Button
-          disabled={checkedCount < 1}
+          disabled={isLoading || checkedCount < 1}
           type="submit"
-          text={`${submitLabel} from ${checkedCount} ${
+          text={`${submitLabel} ${forFrom} ${checkedCount} ${
             checkedCount > 1 ? `${listName}s` : listName
           }`}
         />

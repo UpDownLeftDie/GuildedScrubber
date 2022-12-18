@@ -1,4 +1,5 @@
+import ErrorList from './ErrorList';
 import InputWithSubmit from './InputWithSubmit';
 import ListSelector from './ListSelector';
 
-export { ListSelector, InputWithSubmit };
+export { ErrorList, ListSelector, InputWithSubmit };

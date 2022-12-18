@@ -1,17 +1,22 @@
 import React from 'react';
-import { ContentWithHeader } from '../templates';
+import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
 import GuildedScrubber from '../GuildedScrubber';
 
-const TeamsListSelector = ({ user, setTeams }) => {
+const description =
+  'Pick teams you want to load channels from. You will pick which channels to act on in the next step.';
+
+const TeamsListSelector = ({ user, setTeams, isLoading, setIsLoading }) => {
   const sectionNameSingular = 'Team';
   const sectionName = `${sectionNameSingular}s`;
-  const onSubmit = async (sections) => {
-    let teamIds = sections[sectionName];
-    const shouldFetchDMs = teamIds.has('dm');
-    teamIds.delete('dm');
-    teamIds = Array.from(teamIds);
-    const teams = await GuildedScrubber.GetAllTeams(teamIds, shouldFetchDMs);
+  const onSubmit = async (sectionsArray) => {
+    setIsLoading(true);
+    const teamIds = sectionsArray.map((team) => team.id);
+
+    // const shouldFetchDMs = teamIds.has('dm');
+    // teamIds.delete('dm');
+    // teamIds = Array.from(teamIds);
+    const teams = await GuildedScrubber.GetAllTeams(teamIds);
 
     const fullTeams = Object.entries(teams).reduce((acc, [teamId, team]) => {
       const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
@@ -19,6 +24,7 @@ const TeamsListSelector = ({ user, setTeams }) => {
       return acc;
     }, {});
 
+    setIsLoading(false);
     setTeams(fullTeams);
   };
 
@@ -29,14 +35,15 @@ const TeamsListSelector = ({ user, setTeams }) => {
     },
   ];
   return (
-    <ContentWithHeader headerText={'Teams'}>
+    <ContentContainer headerText={sectionName} description={description}>
       <ListSelector
         itemCollectionsArray={teamsCollectionArray}
         submitLabel="Load Channels"
         listName={sectionNameSingular}
         onSubmit={onSubmit}
+        isLoading={isLoading}
       />
-    </ContentWithHeader>
+    </ContentContainer>
   );
 };
 

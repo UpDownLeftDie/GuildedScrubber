@@ -23,7 +23,7 @@ const InputWithSubmit = (props) => {
   } = props;
 
   return (
-    <div style={style}>
+    <div style={{ ...style, ...props.style }}>
       <Input
         label={inputLabel}
         value={inputValue}
