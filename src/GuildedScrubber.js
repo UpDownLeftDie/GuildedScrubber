@@ -30,7 +30,6 @@ export default class GuildedScrubber {
   };
   static async FetchApi({ route, method = 'GET', headers, data }) {
     const hmac = Cookies.get('guilded-hmac');
-    console.log({ data, ...(data ? { body: JSON.stringify(data) } : {}) });
     return fetch(`/api/${route}`, {
       method,
       headers: {
@@ -84,16 +83,14 @@ export default class GuildedScrubber {
     setChannelsCount,
     setAction,
   ) {
-    const beforeDateStr =
-      beforeDate && encodeURIComponent(beforeDate.toISOString());
-    const afterDateStr =
-      afterDate && encodeURIComponent(afterDate.toISOString());
+    const beforeDateStr = beforeDate && beforeDate.toISOString();
+    const afterDateStr = afterDate && afterDate.toISOString();
     for (const [i, channel] of channels.entries()) {
-      console.log({ i, channelId: channel.id });
       setChannelsCount(i + 1);
       await this.ScrubChannel({
         userId,
         channelId: channel.id,
+        channelType: channel.type,
         mode,
         passphrase,
         beforeDate: beforeDateStr,
@@ -101,26 +98,56 @@ export default class GuildedScrubber {
         setAction,
       });
     }
+    setAction('DONE!');
   }
 
   static async ScrubChannel({
     userId,
     channelId,
+    channelType,
     mode,
     passphrase,
     beforeDate,
     afterDate,
     setAction,
   }) {
-    const messageLimit = 2;
-    let messages = [];
+    const messageLimit = 100;
+
     let totalMessageCount = 0;
     const deleteMode = mode === this.MODES.DELETE;
     const decryptMode = mode === this.MODES.DECRYPT;
+
+    if (CHAT_CHANNELS.includes(channelType)) {
+      totalMessageCount += await GuildedScrubber.HandleChatChannel({
+        userId,
+        channelId,
+        beforeDate,
+        afterDate,
+        passphrase,
+        setAction,
+        deleteMode,
+        decryptMode,
+        messageLimit,
+      });
+    }
+  }
+
+  static async HandleChatChannel({
+    userId,
+    channelId,
+    beforeDate,
+    afterDate,
+    passphrase,
+    setAction,
+    deleteMode,
+    decryptMode,
+    messageLimit,
+  }) {
+    let messages = [];
+    let messageCount = 0;
     do {
-      setAction('Loading messages');
-      console.log('Loading messages', { channelId });
-      messages = await GuildedScrubber.FetchApi({
+      setAction('Loading chat messages');
+      const messages = await GuildedScrubber.FetchApi({
         route: `channel/${channelId}/messages`,
         headers: {
           ...(beforeDate && { 'before-date': beforeDate }),
@@ -130,17 +157,19 @@ export default class GuildedScrubber {
       });
       if (!messages?.length) break;
       beforeDate = messages[messages.length - 1].createdAt;
+      console.log({ messages });
 
       const filteredMessages = filterMessages(
         userId,
         messages,
-        decryptMode || deleteMode,
+        decryptMode,
+        deleteMode,
       );
       if (!filteredMessages?.length) continue;
-      totalMessageCount += filteredMessages.length;
+      messageCount += filteredMessages.length;
 
-      const texts = getTextFromMessages(filteredMessages);
       let newMessages;
+      const texts = getTextFromMessages(filteredMessages);
       if (decryptMode) {
         setAction('Decrypting messages');
         newMessages = decryptTexts(texts, passphrase);
@@ -148,7 +177,7 @@ export default class GuildedScrubber {
         setAction(
           deleteMode ? 'Prepping message for delete' : 'Encrypting messages',
         );
-        newMessages = encryptTexts(texts, passphrase);
+        newMessages = encryptTexts(texts, passphrase, deleteMode);
       }
 
       await GuildedScrubber.UpdateMessages(channelId, newMessages);
@@ -157,19 +186,16 @@ export default class GuildedScrubber {
         await GuildedScrubber.DeleteMessages(channelId, newMessages);
       }
     } while (messages?.length >= messageLimit);
+    return messageCount;
   }
 
   static async UpdateMessages(channelId, messages) {
-    const messageIds = Object.keys(messages);
-    const messageTexts = Object.values(messages);
-    for (let i = 0; i < messageIds.length; i++) {
-      const data = buildMessageContent(messageTexts[i]);
-      const test = await GuildedScrubber.FetchApi({
-        route: `channel/${channelId}/message/${messageIds[i]}`,
+    for (const [messageId, data] of Object.entries(messages)) {
+      const result = await GuildedScrubber.FetchApi({
+        route: `channel/${channelId}/message/${messageId}`,
         method: 'PUT',
         data,
       });
-      console.log('adslkjsdlfkasdlkfhasjkfhds', { test, channelId, i });
     }
   }
 
@@ -184,19 +210,27 @@ export default class GuildedScrubber {
   }
 }
 
-function filterMessages(userId, messages, includeEncryptedMessages = false) {
-  const temp = messages.filter((message) => message.createdBy === userId);
-  if (includeEncryptedMessages) return temp;
-  return temp.filter((message) => {
-    const text = findTextInNodes(message.content.document.nodes);
-    return text.indexOf(ivSearchStr) === -1;
+function filterMessages(userId, messages, decryptMode, deleteMode) {
+  return messages.filter((message) => {
+    if (message.createdBy !== userId) return false; //  cant act on other's messages
+    if (deleteMode) return true; // we're deleting messages so don't care if they're encrypted or not
+
+    // if we're encrypting messages
+    if (!decryptMode) {
+      const text = findTextInNodes(message.content.document.nodes);
+      return !text.includes(ivSearchStr); // don't include messages that are already encrypted
+    }
+    return true;
   });
 }
 
 function getTextFromMessages(messages) {
   const texts = {};
   for (const message of messages) {
-    texts[message.id] = findTextInNodes(message.content.document.nodes, '');
+    texts[message.id] = {
+      text: findTextInNodes(message.content.document.nodes, ''),
+      channelId: message.channelId,
+    };
   }
   return texts;
 }
@@ -220,12 +254,12 @@ function findTextInNodes(nodes, string, depth = 0) {
 
 function encryptTexts(texts, secretKey, deleteMode = false) {
   let encryptedTexts = {};
-  Object.entries(texts).forEach(([messageId, text]) => {
-    if (deleteMode) {
-      encryptedTexts[messageId] = '[deleted for privacy]';
-    } else {
-      encryptedTexts[messageId] = encrypt(text, secretKey);
-    }
+  Object.entries(texts).forEach(([messageId, messageInfo]) => {
+    const text = deleteMode
+      ? '[deleted for privacy]'
+      : encrypt(messageInfo.text, secretKey);
+
+    encryptedTexts[messageId] = buildMessageContent(text);
   });
   return encryptedTexts;
 }
@@ -239,19 +273,20 @@ function encrypt(text, secretKey) {
 }
 
 function decryptTexts(texts, secretKey) {
-  let decryptedTexts = {};
-  Object.entries(texts).forEach((textObj) => {
-    const messageId = textObj[0];
-    const ivIndex = textObj[1].indexOf(ivSearchStr);
+  let decryptedMessageContents = {};
+  Object.entries(texts).forEach(([messageId, messageInfo]) => {
+    const messageText = messageInfo.text;
+    const ivIndex = messageText.indexOf(ivSearchStr);
     const iv = Buffer.from(
-      textObj[1].slice(ivIndex + 5, textObj[1].length),
+      messageText.slice(ivIndex + 5, messageText.length),
       'hex',
     );
-    const text = textObj[1].slice(0, ivIndex);
-
-    decryptedTexts[messageId] = decrypt(text, secretKey, iv);
+    const text = messageText.slice(0, ivIndex);
+    decryptedMessageContents[messageId] = buildMessageContent(
+      decrypt(text, secretKey, iv),
+    );
   });
-  return decryptedTexts;
+  return decryptedMessageContents;
 }
 
 function decrypt(text, secretKey, iv) {

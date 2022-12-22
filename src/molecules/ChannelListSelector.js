@@ -12,7 +12,7 @@ const ChannelListSelector = ({ teams, setSelectedChannels }) => {
   const onSubmit = async (teamsChannels) => {
     const selectedChannels = teamsChannels.map((channel) => ({
       id: channel.id,
-      channelType: channel.contentType,
+      type: channel.contentType,
       teamName: channel.parentName,
     }));
 

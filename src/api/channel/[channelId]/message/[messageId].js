@@ -5,8 +5,7 @@ export default async function handler(req, res) {
   if (req.method === `PUT`) {
     const { messageId, channelId } = req.params;
     const { body } = req;
-    // Fetch user
-    console.log('dfjkhasdkfjahdskfjhasf', { body });
+
     const updatedMessage = await MessageService.UpdateMessage(
       hmac,
       channelId,
@@ -16,7 +15,7 @@ export default async function handler(req, res) {
     res.json(updatedMessage);
   } else if (req.method === `DELETE`) {
     const { messageId, channelId } = req.params;
-    // Fetch user
+
     const deletedMessage = await MessageService.DeleteMessage(
       hmac,
       channelId,

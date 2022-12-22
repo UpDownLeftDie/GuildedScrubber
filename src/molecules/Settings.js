@@ -97,7 +97,8 @@ const Settings = ({
   }
 
   function handleDateChange(dateString, isBefore) {
-    const date = new Date(dateString);
+    let date = new Date(dateString);
+    if (isNaN(date)) date = null;
     if (isBefore) {
       setBeforeDate(date);
     } else {
