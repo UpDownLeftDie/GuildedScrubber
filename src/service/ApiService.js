@@ -1,13 +1,15 @@
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
+import { getRandomInt } from '../utils';
 
 const API_URL = 'https://www.guilded.gg/api';
 
 export default class ApiService {
-  static async FetchGuilded(hmac, url, method = 'GET', data) {
-    const res = await retryFetch(
-      `${API_URL}${url}`,
-      {
+  static async FetchGuilded({ hmac, url, method = 'GET', body }) {
+    await delay(getRandomInt(200, 600));
+    const res = await retryFetch({
+      url: `${API_URL}${url}`,
+      fetchOptions: {
         method,
         headers: {
           authority: 'www.guilded.gg',
@@ -20,24 +22,24 @@ export default class ApiService {
           'sec-fetch-mode': 'cors',
           'sec-fetch-site': 'none',
         },
-        ...(data ? { body: JSON.stringify(data) } : {}),
+        body,
       },
-      10,
-    ).catch((err) => console.error(err));
-    return res.json();
+    }).catch((err) => console.error(err));
+    return res?.json?.();
   }
 }
 
 async function delay(ms) {
-  new Promise((resolve) => setTimeout(() => resolve(), ms));
+  return new Promise((resolve) => setTimeout(() => resolve(), ms));
 }
-async function retryFetch(
+
+async function retryFetch({
   url,
   fetchOptions = {},
-  retries = 5,
-  retryDelay = 5000,
-  timeout = 60000,
-) {
+  retries = 10,
+  retryDelay = 4000,
+  timeout,
+}) {
   return new Promise((resolve, reject) => {
     // check for timeout
     if (timeout) setTimeout(() => reject('error: timeout'), timeout);
@@ -46,15 +48,19 @@ async function retryFetch(
       fetch(url, fetchOptions)
         .then(async (res) => {
           if (res.status === 429) {
-            await delay(retryDelay);
-            wrapper(--n);
+            if (n > 0) {
+              await delay(getRandomInt(retryDelay - 1500, retryDelay + 1000));
+              wrapper(--n);
+            } else {
+              reject(new Error(res.statusText));
+            }
+          } else {
+            resolve(res);
           }
-
-          resolve(res);
         })
         .catch(async (err) => {
           if (n > 0) {
-            await delay(retryDelay);
+            await delay(getRandomInt(retryDelay - 1500, retryDelay + 1000));
             wrapper(--n);
           } else {
             reject(err);
@@ -62,6 +68,6 @@ async function retryFetch(
         });
     };
 
-    wrapper(retries);
+    return wrapper(retries);
   });
 }

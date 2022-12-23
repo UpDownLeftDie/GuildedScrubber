@@ -1,39 +1,22 @@
 import * as React from 'react';
-import { ContentWithHeader } from '../templates';
+import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
-import GuildedScrubber from '../GuildedScrubber';
 
-const ChannelListSelector = ({ userId, teams, decryptMode, deleteMode }) => {
+const description =
+  'Select which channels you would like to delete/encrypt/decrypt your messages from.';
+
+const ChannelListSelector = ({ teams, setSelectedChannels }) => {
   const sectionNameSingular = 'Channel';
   const sectionName = `${sectionNameSingular}s`;
-  const label = decryptMode
-    ? 'Decrypt messages'
-    : deleteMode
-    ? 'Delete messages (unrecoverable)'
-    : 'Encrypt messages (recoverable)';
 
-  const onSubmit = async (items) => {
-    if (decryptMode) {
-    }
-    if (deleteMode) {
-      if (
-        !window.confirm(
-          'You have selected delete mode. You will delete all your messages in the selected channels. This is unrecoverable!',
-        )
-      ) {
-        return;
-      }
-    } else {
-      if (
-        !window.confirm(
-          'You are about to encrypt messages in the selected channel. Make sure you back up your passphrase if you ever want to decrypt them',
-        )
-      ) {
-        return;
-      }
-    }
+  const onSubmit = async (teamsChannels) => {
+    const selectedChannels = teamsChannels.map((channel) => ({
+      id: channel.id,
+      type: channel.contentType,
+      teamName: channel.parentName,
+    }));
 
-    GuildedScrubber.ScrubChannels(userId, items, decryptMode, deleteMode);
+    setSelectedChannels(selectedChannels);
   };
 
   function getChannelCollections(teams) {
@@ -44,14 +27,15 @@ const ChannelListSelector = ({ userId, teams, decryptMode, deleteMode }) => {
 
   const channelCollections = getChannelCollections(teams);
   return (
-    <ContentWithHeader headerText={'Channels'}>
+    <ContentContainer headerText={sectionName} description={description}>
       <ListSelector
         itemCollectionsArray={channelCollections}
-        submitLabel={label}
+        submitLabel="Set settings"
+        forFrom="for"
         onSubmit={onSubmit}
-        listName={sectionName}
+        listName={sectionNameSingular}
       />
-    </ContentWithHeader>
+    </ContentContainer>
   );
 };
 

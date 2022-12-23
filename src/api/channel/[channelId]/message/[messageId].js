@@ -1,22 +1,21 @@
-import { MessageService } from '../../service';
+import { MessageService } from '../../../../service';
 
 export default async function handler(req, res) {
   const hmac = req.headers.hmac;
   if (req.method === `PUT`) {
-    const { messageId } = req.params;
-    const { channelId, data } = req.body;
-    // Fetch user
+    const { messageId, channelId } = req.params;
+    const { body } = req;
+
     const updatedMessage = await MessageService.UpdateMessage(
       hmac,
       channelId,
       messageId,
-      data,
+      body,
     );
     res.json(updatedMessage);
   } else if (req.method === `DELETE`) {
-    const { messageId } = req.params;
-    const { channelId } = req.body;
-    // Fetch user
+    const { messageId, channelId } = req.params;
+
     const deletedMessage = await MessageService.DeleteMessage(
       hmac,
       channelId,

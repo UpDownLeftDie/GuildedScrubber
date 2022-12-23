@@ -1,3 +1,3 @@
-import ContentWithHeader from './ContentWithHeader';
+import ContentContainer from './ContentContainer';
 
-export { ContentWithHeader };
+export { ContentContainer };
