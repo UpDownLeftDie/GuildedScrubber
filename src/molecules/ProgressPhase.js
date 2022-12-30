@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GuildedScrubber from '../GuildedScrubber';
+import { GuildedScrubber } from '../classes';
 import { ContentContainer } from '../templates';
 
 const Progress = ({

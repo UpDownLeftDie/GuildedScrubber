@@ -1,7 +1,13 @@
-import ChannelListSelector from './ChannelListSelector';
-import LoadUser from './LoadUser';
-import Progress from './Progress';
-import Settings from './Settings';
-import TeamsListSelector from './TeamsListSelector';
+import ChannelSelectorPhase from './ChannelSelectorPhase';
+import LoadUserPhase from './LoadUserPhase';
+import ProgressPhase from './ProgressPhase';
+import SettingsPhase from './SettingsPhase';
+import TeamsSelectorPhase from './TeamsSelectorPhase';
 
-export { ChannelListSelector, LoadUser, Progress, TeamsListSelector, Settings };
+export {
+  ChannelSelectorPhase,
+  LoadUserPhase,
+  ProgressPhase,
+  SettingsPhase,
+  TeamsSelectorPhase,
+};

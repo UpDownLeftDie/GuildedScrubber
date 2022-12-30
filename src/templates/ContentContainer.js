@@ -17,7 +17,13 @@ const contentStyles = {
   marginTop: '20px',
 };
 
-const ContentContainer = ({ headerText, description, children }) => {
+const ContentContainer = ({ headerText, children, description }) => {
+  description =
+    description?.map?.((item, key) => {
+      if (typeof item === 'string') return item;
+      return React.cloneElement(item, { key });
+    }) || description;
+
   return (
     <div style={styles}>
       {headerText ? <h2 style={headerStyles}>{headerText}</h2> : null}

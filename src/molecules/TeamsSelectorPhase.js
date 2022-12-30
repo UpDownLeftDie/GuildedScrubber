@@ -1,12 +1,18 @@
 import React from 'react';
 import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
-import GuildedScrubber from '../GuildedScrubber';
+import { GuildedScrubber, SelectableList } from '../classes';
 
 const description =
   'Pick teams you want to load channels from. You will pick which channels to act on in the next step.';
 
-const TeamsListSelector = ({ user, setTeams, isLoading, setIsLoading }) => {
+const TeamsSelectorPhase = ({
+  user,
+  setTeams,
+  isLoading,
+  setIsLoading,
+  mode,
+}) => {
   const sectionNameSingular = 'Team';
   const sectionName = `${sectionNameSingular}s`;
   const onSubmit = async (sectionsArray) => {
@@ -20,7 +26,13 @@ const TeamsListSelector = ({ user, setTeams, isLoading, setIsLoading }) => {
 
     const fullTeams = Object.entries(teams).reduce((acc, [teamId, team]) => {
       const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
-      acc[teamId] = { ...teamInfo, ...team };
+      console.log({ team });
+      const filteredChannels = GuildedScrubber.FilterChannelsByMode(
+        team.channels,
+        mode,
+      );
+      console.log({ teams: team.channels, filteredChannels });
+      acc[teamId] = { ...teamInfo, ...team, channels: filteredChannels };
       return acc;
     }, {});
 
@@ -34,11 +46,17 @@ const TeamsListSelector = ({ user, setTeams, isLoading, setIsLoading }) => {
       items: user.teams,
     },
   ];
+
+  const selectableList = new SelectableList(
+    new Map([[null, { name: sectionName, teams: user.teams }]]),
+    'teams',
+  );
+  console.log(selectableList);
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <ListSelector
-        itemCollectionsArray={teamsCollectionArray}
         submitLabel="Load Channels"
+        selectableList={selectableList}
         listName={sectionNameSingular}
         onSubmit={onSubmit}
         isLoading={isLoading}
@@ -47,4 +65,4 @@ const TeamsListSelector = ({ user, setTeams, isLoading, setIsLoading }) => {
   );
 };
 
-export default TeamsListSelector;
+export default TeamsSelectorPhase;

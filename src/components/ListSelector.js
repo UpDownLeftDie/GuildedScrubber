@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SelectableList } from '../classes';
 import { Button } from '../atoms';
 
 const style = {
@@ -27,6 +28,7 @@ const ListSelector = ({
   listName = '',
   isLoading,
   forFrom = 'from',
+  flavor,
 }) => {
   const [isAllChecked, setIsAllChecked] = useState(new Set());
   const [isChecked, setIsChecked] = useState(() => {
@@ -150,6 +152,7 @@ const ListSelector = ({
           text={`${submitLabel} ${forFrom} ${checkedCount} ${
             checkedCount > 1 ? `${listName}s` : listName
           }`}
+          flavor={flavor}
         />
       </form>
     </div>

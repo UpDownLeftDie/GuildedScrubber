@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
+import { SelectableList } from '../classes';
 
 const description =
   'Select which channels you would like to delete/encrypt/decrypt your messages from.';
 
-const ChannelListSelector = ({ teams, setSelectedChannels }) => {
+const ChannelSelectorPhase = ({ user }) => {
   const sectionNameSingular = 'Channel';
   const sectionName = `${sectionNameSingular}s`;
 
@@ -16,22 +17,25 @@ const ChannelListSelector = ({ teams, setSelectedChannels }) => {
       teamName: channel.parentName,
     }));
 
-    setSelectedChannels(selectedChannels);
+    // setSelectedChannels(selectedChannels);
   };
 
-  function getChannelCollections(teams) {
-    return Object.values(teams).map((team) => {
-      return { sectionName: team.name, items: team.channels };
-    });
-  }
+  // function getChannelCollections(teams) {
+  //   return Object.values(teams).map((team) => {
+  //     return { sectionName: team.name, items: team.channels };
+  //   });
+  // }
 
-  const channelCollections = getChannelCollections(teams);
+  // const channelCollections = getChannelCollections(teams);
+
+  const selectableList = new SelectableList(user.teams, 'channels');
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <ListSelector
-        itemCollectionsArray={channelCollections}
-        submitLabel="Set settings"
-        forFrom="for"
+        selectableList={selectableList}
+        submitLabel="Scrub"
+        forFrom=" "
+        flavor="goldSolid"
         onSubmit={onSubmit}
         listName={sectionNameSingular}
       />
@@ -39,4 +43,4 @@ const ChannelListSelector = ({ teams, setSelectedChannels }) => {
   );
 };
 
-export default ChannelListSelector;
+export default ChannelSelectorPhase;

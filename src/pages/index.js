@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useReducer } from 'react';
 import {
-  ChannelListSelector,
-  LoadUser,
-  Progress,
-  Settings,
-  TeamsListSelector,
+  ChannelSelectorPhase,
+  LoadUserPhase,
+  ProgressPhase,
+  SettingsPhase,
+  TeamsSelectorPhase,
 } from '../molecules';
-import GuildedScrubber from '../GuildedScrubber';
-const MODES = GuildedScrubber.MODES;
+import { User } from '../classes';
 
 const pageStyles = {
   color: '#ececee',
@@ -38,37 +36,40 @@ const pageContentStyles = {
 
 const PHASE = {
   LOAD_USER: 1,
-  SELECT_TEAMS: 2,
-  SELECT_CHANNELS: 3,
-  SETTINGS: 4,
+  SETTINGS: 2,
+  SELECT_TEAMS: 3,
+  SELECT_CHANNELS: 4,
   RUNNING: 5,
 };
 
-const tagLine = "Don't delete your account till you've scrubbed it!";
-const description = [
-  'Delete all your message before you delete your account!',
-  <br />,
-  'Did you know that when you delete your account on Guilded your messages remain. If this bothers you, this tool is for you! Easily delete all your message with just a few clicks of a button.',
-];
+// const tagLine = "Don't delete your account till you've scrubbed it!";
+// const description = [
+//   'Delete all your message before you delete your account!',
+//   <br />,
+//   'Did you know that when you delete your account on Guilded your messages remain. If this bothers you, this tool is for you! Easily delete all your message with just a few clicks of a button.',
+// ];
+
+function userReducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return { count: state.count + 1 };
+    case 'decrement':
+      return { count: state.count - 1 };
+    default:
+      throw new Error();
+  }
+}
+
+const user = new User();
 
 const IndexPage = () => {
   const [slogan, setSlogan] = useState('');
   const [currentPhase, setPhase] = useState(PHASE.LOAD_USER);
-  const handlePhase = (phase) => {
-    if (currentPhase < phase) {
-      setPhase(phase);
-    }
+  const nextPhase = () => {
+    setPhase(currentPhase + 1);
   };
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isRunning, setIsRunning] = useState(false);
-  const [hmac, setHmac] = useState(Cookies.get('guilded-hmac') || '');
-  const [user, setUser] = useState(null);
-  const [teams, setTeams] = useState(null);
-  const [selectedChannels, setSelectedChannels] = useState(null);
-  const [beforeDate, setBeforeDate] = useState(null);
-  const [afterDate, setAfterDate] = useState(null);
-  const [passphrase, setPassphrase] = useState('');
-  const [mode, setMode] = useState(MODES.ENCRYPT);
 
   useEffect(() => {
     import('/static/slogans.json').then((slogans) => {
@@ -77,13 +78,6 @@ const IndexPage = () => {
       setIsLoading(false); // important to cause rerender for button
     });
   }, []);
-
-  useEffect(() => {
-    if (user?.teams && !teams) handlePhase(PHASE.SELECT_TEAMS);
-    if (teams) handlePhase(PHASE.SELECT_CHANNELS);
-    if (selectedChannels) handlePhase(PHASE.SETTINGS);
-    if (isRunning) handlePhase(PHASE.RUNNING);
-  }, [user, teams, selectedChannels, isRunning]);
 
   return (
     <main style={pageStyles}>
@@ -96,48 +90,37 @@ const IndexPage = () => {
       </div>
       <div style={pageContentStyles}>
         {currentPhase === PHASE.LOAD_USER ? (
-          <LoadUser
-            hmac={hmac}
-            setHmac={setHmac}
+          <LoadUserPhase
             user={user}
-            setUser={setUser}
+            hmac={user.hmac}
+            // setUser={setUser}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
-          />
-        ) : currentPhase === PHASE.SELECT_TEAMS ? (
-          <TeamsListSelector
-            user={user}
-            setTeams={setTeams}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-          />
-        ) : currentPhase === PHASE.SELECT_CHANNELS ? (
-          <ChannelListSelector
-            userId={user.id}
-            teams={teams}
-            setSelectedChannels={setSelectedChannels}
+            nextPhase={nextPhase}
           />
         ) : currentPhase === PHASE.SETTINGS ? (
-          <Settings
-            mode={mode}
-            setMode={setMode}
-            passphrase={passphrase}
-            setPassphrase={setPassphrase}
-            beforeDate={beforeDate}
-            setBeforeDate={setBeforeDate}
-            afterDate={afterDate}
-            setAfterDate={setAfterDate}
-            setIsRunning={setIsRunning}
+          <SettingsPhase
+            user={user}
+            // setUser={setUser}
+            setIsLoading={setIsLoading}
+            nextPhase={nextPhase}
+          />
+        ) : currentPhase === PHASE.SELECT_TEAMS ? (
+          <TeamsSelectorPhase
+            user={user}
+            // setTeams={setTeams}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            nextPhase={nextPhase}
+          />
+        ) : currentPhase === PHASE.SELECT_CHANNELS ? (
+          <ChannelSelectorPhase
+            user={user}
+            // teams={teams}
+            // setSelectedChannels={setSelectedChannels}
           />
         ) : currentPhase === PHASE.RUNNING ? (
-          <Progress
-            user={user}
-            mode={mode}
-            passphrase={passphrase}
-            beforeDate={beforeDate}
-            afterDate={afterDate}
-            channels={selectedChannels}
-          />
+          <ProgressPhase user={user} />
         ) : null}
       </div>
     </main>
