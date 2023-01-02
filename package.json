@@ -29,5 +29,10 @@
     "sass": "1.57.1",
     "stream-browserify": "3.0.0",
     "uuid": "9.0.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.20.7",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "babel-preset-gatsby": "^3.3.1"
   }
 }

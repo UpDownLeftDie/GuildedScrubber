@@ -19,12 +19,31 @@ export default class ChannelService {
 
     return messages;
   }
+
+  static async GetAnnouncements({
+    hmac,
+    channelId,
+    maxItems,
+    beforeDate,
+    afterDate,
+  }) {
+    const { announcements } = await _getAnnouncements({
+      hmac,
+      channelId,
+      maxItems,
+      beforeDate,
+      afterDate,
+    });
+    console.log({ announcements, totalLength: announcements.length });
+
+    return announcements;
+  }
 }
 
 async function _getMessages({
   hmac,
   channelId,
-  messageLimit,
+  messageLimit = 100,
   beforeDate,
   afterDate,
 }) {
@@ -37,10 +56,7 @@ async function _getMessages({
   const { threads = [] } = res;
   let { messages = [] } = res;
 
-  console.log({ initialLength: messages.length });
-
   for (const thread of threads) {
-    console.log('threadId: ', thread.id);
     const { messages: threadMessages } = await _getMessages({
       hmac,
       channelId: thread.id,
@@ -49,11 +65,25 @@ async function _getMessages({
       afterDate,
     });
     messages = messages.concat(threadMessages);
-    console.log({
-      threadLength: threadMessages.length,
-      newLength: messages.length,
-    });
   }
 
   return { messages, threads };
+}
+
+async function _getAnnouncements({
+  hmac,
+  channelId,
+  maxItems = 1000,
+  beforeDate,
+  afterDate,
+}) {
+  let params = new URLSearchParams();
+  params.append('maxItems', maxItems);
+  if (beforeDate) params.append('beforeDate', beforeDate);
+  if (afterDate) params.append('afterDate', afterDate);
+  const url = `/channels/${channelId}/announcements?${params.toString()}`;
+
+  const { announcements = [] } = await ApiService.FetchGuilded({ hmac, url });
+
+  return { announcements };
 }

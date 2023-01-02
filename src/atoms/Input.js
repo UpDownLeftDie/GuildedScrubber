@@ -13,7 +13,12 @@ const Input = ({
 }) => {
   const handleOnChange = (e) => {
     const value = e.target.value;
-    onChange(value);
+    onChange?.(value);
+  };
+
+  const handleOnBlur = (e) => {
+    const value = e.target.value;
+    onBlur?.(value);
   };
 
   const forId = `${label.split(' ').join('')}-input`;
@@ -26,7 +31,7 @@ const Input = ({
         placeholder={placeholder}
         type={type}
         onChange={handleOnChange}
-        onBlur={onBlur}
+        onBlur={handleOnBlur}
         maxLength={maxLength}
         minLength={minLength}
         disabled={disabled}

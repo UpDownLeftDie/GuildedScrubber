@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import GuildedScrubber from '../GuildedScrubber';
+import { GuildedScrubber } from '../classes';
 import { ContentContainer } from '../templates';
 
-const Progress = ({
-  user,
-  mode,
-  passphrase,
-  channels,
-  beforeDate,
-  afterDate,
-}) => {
+const Progress = ({ user }) => {
   const [channelsCount, setChannelsCount] = useState(1);
   const [action, setAction] = useState('');
   const [history, setHistory] = useState({});
+  let totalChannels = user.settings.selectedChannels.size;
 
   useEffect(() => {
     GuildedScrubber.ScrubChannels(
-      user.id,
-      channels,
-      mode,
-      passphrase,
-      beforeDate,
-      afterDate,
+      user,
       setChannelsCount,
       setAction,
       setHistory,
@@ -30,9 +19,9 @@ const Progress = ({
 
   return (
     <ContentContainer headerText={'Scrubbing...'}>
-      {channelsCount} of {channels.length} Channels
+      {channelsCount} of {totalChannels} Channels
       <br />
-      <progress value={channelsCount} max={channels.length} />
+      <progress value={channelsCount} max={totalChannels} />
       <br />
       <div>Currently: {action}</div>
       <br />
@@ -50,7 +39,8 @@ const Progress = ({
         Email: support@guilded.gg
         <br />
         Message: I would like to withdrawal consent, restriction processing, and
-        request full erasure of all my personal data. My UserId is {user.id}
+        request full erasure of all my personal data under GDPR. My UserId is{' '}
+        {user.id}
       </div>
     </ContentContainer>
   );

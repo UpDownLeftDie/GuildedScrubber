@@ -1,6 +1,4 @@
-import React from 'react';
-import Cookies from 'js-cookie';
-import GuildedScrubber from '../GuildedScrubber';
+import React, { useState } from 'react';
 import { InputWithSubmit } from '../components';
 import { ContentContainer } from '../templates';
 
@@ -20,28 +18,33 @@ const description = [
     rel="noopener noreferrer nofollow">
     cookies
   </a>,
-  " after you've logged in on Guilded and look for ",
+  " after you've logged in on Guilded.gg and look for ",
   <span style={codeStyles}>hmac_signed_session</span>,
   ' and paste the value here.',
   <br />,
   <br />,
-  "This is needed to act on your behalf and make requests relevant to your account. This site doesn't save any data is this value is only saved in your local browser for convenience. Clear your cookies on this site when done using it.",
+  'This is needed to act on your behalf and make requests relevant to your account. This value is only saved in your local browser for convenience.',
+  <br />,
+  <br />,
+  "This site doesn't save any data. Clear your cookies on this site when done using it.",
 ];
 
-const LoadUser = ({
+const LoadUserPhase = ({
   hmac,
-  setHmac,
   user,
   setUser,
   isLoading,
   setIsLoading,
+  nextPhase,
 }) => {
+  const [hmacInput, setHmacInput] = useState(hmac);
+
   const loadUser = async () => {
     setIsLoading(true);
-    Cookies.set('guilded-hmac', hmac);
-    const user = await GuildedScrubber.GetUser();
-    setUser(user);
+    await user.LoadUser(hmacInput);
     setIsLoading(false);
+
+    nextPhase();
   };
 
   return (
@@ -49,14 +52,14 @@ const LoadUser = ({
       <InputWithSubmit
         inputLabel={'Guilded hmac_signed_session'}
         style={styles}
-        inputValue={hmac}
-        inputOnChange={setHmac}
+        inputValue={hmacInput}
+        inputOnChange={setHmacInput}
         inputMaxLength={190}
         inputPlaceholder={
           'b35f6d54a296b2b37e6b9ecf8e63a5bf08b287278579865eae467632927162dcd746912e7ae108bb7736e594d38e.09d6921215c6fec2c44d0c6d5b1b48ac.f890adc436fb9474fd423e0f3ca34412219f96c55a79539e86297052da9ecd0c'
         }
-        inputDisabled={!!user?.id || isLoading}
-        submitDisabled={hmac?.length !== 190 || !!user?.id || isLoading}
+        inputDisabled={!!user.id || isLoading}
+        submitDisabled={hmacInput?.length !== 190 || !!user.id || isLoading}
         submitText="Load User"
         submitOnClick={loadUser}
         submitFlavor="gold"
@@ -65,4 +68,4 @@ const LoadUser = ({
   );
 };
 
-export default LoadUser;
+export default LoadUserPhase;
