@@ -1,6 +1,7 @@
 // https://www.guilded.gg/api/content/announcement/V6XpoZo6/replies
 
-import { ReplyService } from '../../../service';
+import ReplyService from '../../../../service/ReplyService';
+
 export default async function handler(req, res) {
   if (req.method === `GET`) {
     const { announcementId } = req.params;
