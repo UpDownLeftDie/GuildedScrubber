@@ -1,57 +1,57 @@
 import React from 'react';
 import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
-import { GuildedScrubber, SelectableList } from '../classes';
+import { Channel, SelectableList } from '../classes';
 
 const description =
   'Pick teams you want to load channels from. You will pick which channels to act on in the next step.';
 
 const TeamsSelectorPhase = ({
   user,
-  setTeams,
   isLoading,
   setIsLoading,
   mode,
+  nextPhase,
 }) => {
   const sectionNameSingular = 'Team';
   const sectionName = `${sectionNameSingular}s`;
-  const onSubmit = async (sectionsArray) => {
+  const onSubmit = async (selectedTeams) => {
     setIsLoading(true);
-    const teamIds = sectionsArray.map((team) => team.id);
+    const teamIds = selectedTeams.get(sectionName);
+    console.log({ selectedTeams, teamIds, teams: user.teams });
 
-    // const shouldFetchDMs = teamIds.has('dm');
-    // teamIds.delete('dm');
-    // teamIds = Array.from(teamIds);
-    const teams = await GuildedScrubber.GetAllTeams(teamIds);
-
-    const fullTeams = Object.entries(teams).reduce((acc, [teamId, team]) => {
-      const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
-      console.log({ team });
-      const filteredChannels = GuildedScrubber.FilterChannelsByMode(
+    const teams = new Map();
+    teamIds.forEach((teamId) => {
+      const team = user.teams.get(teamId);
+      const filteredChannels = Channel.FilterChannelsByMode(
         team.channels,
         mode,
       );
-      console.log({ teams: team.channels, filteredChannels });
-      acc[teamId] = { ...teamInfo, ...team, channels: filteredChannels };
-      return acc;
-    }, {});
+      team.channels = filteredChannels;
+      teams.set(team.id, team);
+    });
+
+    // const teams = user.teams.reduce((acc, [teamId, team]) => {
+    //   const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
+
+    //   const filteredChannels = GuildedScrubber.FilterChannelsByMode(
+    //     team.channels,
+    //     mode,
+    //   );
+    //   console.log({ teams: team.channels, filteredChannels });
+    //   acc[teamId] = { ...teamInfo, ...team, channels: filteredChannels };
+    //   return acc;
+    // }, {});
 
     setIsLoading(false);
-    setTeams(fullTeams);
+    user.settings.selectedTeams = teams;
+    nextPhase();
   };
-
-  const teamsCollectionArray = [
-    {
-      sectionName,
-      items: user.teams,
-    },
-  ];
 
   const selectableList = new SelectableList(
     new Map([[null, { name: sectionName, teams: user.teams }]]),
     'teams',
   );
-  console.log(selectableList);
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <ListSelector

@@ -93,7 +93,6 @@ const IndexPage = () => {
           <LoadUserPhase
             user={user}
             hmac={user.hmac}
-            // setUser={setUser}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
             nextPhase={nextPhase}
@@ -101,24 +100,18 @@ const IndexPage = () => {
         ) : currentPhase === PHASE.SETTINGS ? (
           <SettingsPhase
             user={user}
-            // setUser={setUser}
             setIsLoading={setIsLoading}
             nextPhase={nextPhase}
           />
         ) : currentPhase === PHASE.SELECT_TEAMS ? (
           <TeamsSelectorPhase
             user={user}
-            // setTeams={setTeams}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
             nextPhase={nextPhase}
           />
         ) : currentPhase === PHASE.SELECT_CHANNELS ? (
-          <ChannelSelectorPhase
-            user={user}
-            // teams={teams}
-            // setSelectedChannels={setSelectedChannels}
-          />
+          <ChannelSelectorPhase user={user} nextPhase={nextPhase} />
         ) : currentPhase === PHASE.RUNNING ? (
           <ProgressPhase user={user} />
         ) : null}

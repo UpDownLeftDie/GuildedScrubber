@@ -1,34 +1,38 @@
 import * as React from 'react';
 import { ContentContainer } from '../templates';
 import { ListSelector } from '../components';
-import { SelectableList } from '../classes';
+import { SelectableList, Team } from '../classes';
 
 const description =
   'Select which channels you would like to delete/encrypt/decrypt your messages from.';
 
-const ChannelSelectorPhase = ({ user }) => {
+const ChannelSelectorPhase = ({ user, nextPhase }) => {
   const sectionNameSingular = 'Channel';
   const sectionName = `${sectionNameSingular}s`;
 
   const onSubmit = async (teamsChannels) => {
-    const selectedChannels = teamsChannels.map((channel) => ({
-      id: channel.id,
-      type: channel.contentType,
-      teamName: channel.parentName,
-    }));
+    const selectedChannels = new Set();
+    for (const [teamName, channelIds] of teamsChannels.entries()) {
+      const team = Team.GetTeamByName(teamName, user.settings.selectedTeams);
+      channelIds.delete('_all');
+      for (const channelId of channelIds) {
+        const channel = team.channels.get(channelId);
+        selectedChannels.add({
+          ...channel,
+          teamName,
+        });
+      }
+    }
 
-    // setSelectedChannels(selectedChannels);
+    user.settings.selectedChannels = selectedChannels;
+    console.log({ selectedChannels });
+    nextPhase();
   };
 
-  // function getChannelCollections(teams) {
-  //   return Object.values(teams).map((team) => {
-  //     return { sectionName: team.name, items: team.channels };
-  //   });
-  // }
-
-  // const channelCollections = getChannelCollections(teams);
-
-  const selectableList = new SelectableList(user.teams, 'channels');
+  const selectableList = new SelectableList(
+    user.settings.selectedTeams,
+    'channels',
+  );
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <ListSelector

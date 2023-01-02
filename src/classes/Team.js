@@ -26,4 +26,11 @@ export default class Team {
       this.categories = categories;
     }
   }
+
+  static GetTeamByName(name, teams) {
+    for (const team of teams.values()) {
+      if (team.name === name) return team;
+    }
+    return null;
+  }
 }

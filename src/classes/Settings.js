@@ -20,12 +20,13 @@ export default class Settings {
     afterDate = null,
     shouldFetchDMs = false,
   } = {}) {
-    this.isSet = false;
     this.mode = mode;
     this.secretKey = secretKey;
     this.beforeDate = beforeDate;
     this.afterDate = afterDate;
     this.shouldFetchDMs = shouldFetchDMs;
+    this.selectedTeams = new Map();
+    this.selectedChannels = new Map();
   }
 
   static Validate(settings) {

@@ -23,16 +23,16 @@ export default class ChatChannel {
   }
 
   static async Process({
-    userId,
+    user,
     channelId,
-    beforeDate,
-    afterDate,
-    passphrase,
     setAction,
     deleteMode,
     decryptMode,
     messageLimit,
   }) {
+    const { settings } = user;
+    const { secretKey } = settings;
+    let { beforeDate, afterDate } = settings;
     let messages = [];
     let messageCount = 0;
     do {
@@ -45,12 +45,13 @@ export default class ChatChannel {
           ...(messageLimit && { 'message-limit': messageLimit }),
         },
       });
+      console.log({ messages });
       if (!messages?.length) break;
       beforeDate = messages[messages.length - 1].createdAt;
       console.log({ messages });
 
       const filteredMessages = Messages.FilterByUserAndMode(
-        userId,
+        user.id,
         messages,
         decryptMode,
         deleteMode,
@@ -62,12 +63,12 @@ export default class ChatChannel {
       const texts = Messages.GetTextFromContent(filteredMessages);
       if (decryptMode) {
         setAction('Decrypting messages');
-        newMessages = Messages.DecryptTexts(texts, passphrase);
+        newMessages = Messages.DecryptTexts(texts, secretKey);
       } else {
         setAction(
           deleteMode ? 'Prepping message for delete' : 'Encrypting messages',
         );
-        newMessages = Messages.EncryptTexts(texts, passphrase, deleteMode);
+        newMessages = Messages.EncryptTexts(texts, secretKey, deleteMode);
       }
 
       await ChatChannel.UpdateMessages(channelId, newMessages);

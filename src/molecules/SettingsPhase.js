@@ -98,9 +98,9 @@ const SettingsPhase = ({ user, setUser, nextPhase }) => {
     e.preventDefault();
     const isValid = validateSettings();
     if (isValid) {
-      settings.isSet = true;
+      settings.beforeDate = settings.beforeDate && beforeDate.toISOString();
+      settings.afterDate = settings.afterDate && afterDate.toISOString();
       user.settings = settings;
-      // setUser(user);
       nextPhase();
     }
   }

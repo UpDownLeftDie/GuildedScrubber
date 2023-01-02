@@ -41,11 +41,9 @@ const LoadUserPhase = ({
 
   const loadUser = async () => {
     setIsLoading(true);
-
     await user.LoadUser(hmacInput);
-    // setUser(user);
-
     setIsLoading(false);
+
     nextPhase();
   };
 
