@@ -5,20 +5,15 @@ export default class UserService {
     const url = `/me?isLogin=true&v2=true`;
     const res = await ApiService.FetchGuilded({ hmac, url });
     const { teams, user } = res;
-    this.userId = user.id;
     user.teams = teams;
     return user;
   }
 
-  static async GetDMChannels(hmac) {
-    let teamChannels = JSON.parse(localStorage.getItem('teamChannels') || '{}');
-
-    const url = `/users/${this.userId}/channels`;
+  static async GetDMChannels(hmac, userId) {
+    const url = `/users/${userId}/channels`;
     const res = await ApiService.FetchGuilded({ hmac, url });
     const { channels } = res;
 
-    teamChannels.dm = channels;
-    localStorage.setItem('teamChannels', JSON.stringify(teamChannels));
     return channels;
   }
 }

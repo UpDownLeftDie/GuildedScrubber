@@ -25,7 +25,6 @@ const ChannelSelectorPhase = ({ user, nextPhase }) => {
     }
 
     user.settings.selectedChannels = selectedChannels;
-    console.log({ selectedChannels });
     nextPhase();
   };
 

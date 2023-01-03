@@ -1,4 +1,4 @@
-import { UserService } from '../service';
+import UserService from '../../service/UserService';
 
 export default async function handler(req, res) {
   if (req.method === `GET`) {

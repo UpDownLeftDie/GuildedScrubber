@@ -6,6 +6,8 @@ import { Channel, SelectableList } from '../classes';
 const description =
   'Pick teams you want to load channels from. You will pick which channels to act on in the next step.';
 
+const DMs = 'DMs';
+
 const TeamsSelectorPhase = ({
   user,
   isLoading,
@@ -17,8 +19,15 @@ const TeamsSelectorPhase = ({
   const sectionName = `${sectionNameSingular}s`;
   const onSubmit = async (selectedTeams) => {
     setIsLoading(true);
-    const teamIds = selectedTeams.get(sectionName);
-    console.log({ selectedTeams, teamIds, teams: user.teams });
+
+    let teamIds = new Set();
+
+    if (selectedTeams.get(DMs).size) {
+      await user.LoadDMs();
+      teamIds.add('DMs');
+    }
+
+    teamIds = new Set([...teamIds, ...selectedTeams.get(sectionName)]);
 
     const teams = new Map();
     teamIds.forEach((teamId) => {
@@ -31,27 +40,16 @@ const TeamsSelectorPhase = ({
       teams.set(team.id, team);
     });
 
-    // const teams = user.teams.reduce((acc, [teamId, team]) => {
-    //   const teamInfo = user.teams.find((userTeam) => userTeam.id === teamId);
-
-    //   const filteredChannels = GuildedScrubber.FilterChannelsByMode(
-    //     team.channels,
-    //     mode,
-    //   );
-    //   console.log({ teams: team.channels, filteredChannels });
-    //   acc[teamId] = { ...teamInfo, ...team, channels: filteredChannels };
-    //   return acc;
-    // }, {});
-
     setIsLoading(false);
     user.settings.selectedTeams = teams;
     nextPhase();
   };
 
-  const selectableList = new SelectableList(
-    new Map([[null, { name: sectionName, teams: user.teams }]]),
-    'teams',
-  );
+  const teamsCollection = new Map([
+    [0, { name: DMs }],
+    [1, { name: sectionName, teams: user.teams }],
+  ]);
+  const selectableList = new SelectableList(teamsCollection, 'teams');
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <ListSelector

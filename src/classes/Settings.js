@@ -18,13 +18,11 @@ export default class Settings {
     secretKey = '',
     beforeDate = null,
     afterDate = null,
-    shouldFetchDMs = false,
   } = {}) {
     this.mode = mode;
     this.secretKey = secretKey;
     this.beforeDate = beforeDate;
     this.afterDate = afterDate;
-    this.shouldFetchDMs = shouldFetchDMs;
     this.selectedTeams = new Map();
     this.selectedChannels = new Map();
   }

@@ -7,7 +7,7 @@ export default class User {
   constructor() {
     this.hmac = Cookies.get('guilded-hmac') || '';
     this.guildedUser = {};
-    this.teams = [];
+    this.teams = new Map();
     this.settings = new Settings();
     this.id = '';
   }
@@ -22,15 +22,33 @@ export default class User {
     this.teams = await this.LoadTeams(guildedUser.teams);
   }
 
+  async LoadDMs() {
+    if (this.teams.has('DMs')) return;
+
+    const dmChannels = await FetchApi({ route: `user/${this.id}/dms` });
+    const channels = dmChannels.map((channel) => {
+      if (channel.name) return channel;
+      const users = channel.users
+        .filter((user) => user.id !== this.id)
+        .map((user) => user.name);
+      const name = users.length ? users.join(', ') : 'You';
+      channel.name = name;
+      return channel;
+    });
+    const dms = new Team('DMs', { channels });
+    dms.init({ name: 'DMs', isAdmin: false });
+    this.teams.set('DMs', dms);
+
+    this.#saveTeams(this.teams);
+  }
+
   async LoadTeams(guildedUserTeams) {
     const userTeams = new Map(
       guildedUserTeams.map((team) => {
         return [team.id, team];
       }),
     );
-    const storedTeams = new Map(
-      JSON.parse(localStorage.getItem('teams') || '[]'),
-    );
+    const storedTeams = this.#loadTeams();
 
     const teams = new Map();
     for (const [teamId, userTeam] of userTeams.entries()) {
@@ -38,19 +56,18 @@ export default class User {
       await team.init(userTeam);
       teams.set(teamId, team);
 
-      localStorage.setItem(
-        'teams',
-        JSON.stringify(Array.from(teams.entries())),
-      );
+      this.#saveTeams(teams);
     }
 
-    // const filteredTeams = Object.fromEntries(
-    //   Object.entries(teams).filter(([teamId]) => {
-    //     return teamIds.includes(teamId);
-    //   }),
-    // );
-
     return teams;
+  }
+
+  #loadTeams() {
+    return new Map(JSON.parse(localStorage.getItem('teams') || '[]'));
+  }
+
+  #saveTeams(teams) {
+    localStorage.setItem('teams', JSON.stringify(Array.from(teams.entries())));
   }
 
   #setHmac(hmac) {

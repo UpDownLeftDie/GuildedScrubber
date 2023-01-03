@@ -4,7 +4,7 @@ import FetchApi from './FetchApi';
 export default class ChatChannel {
   static async UpdateMessages(channelId, messages) {
     for (const [messageId, data] of Object.entries(messages)) {
-      const result = await FetchApi({
+      await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
         method: 'PUT',
         data,
@@ -13,10 +13,9 @@ export default class ChatChannel {
   }
 
   static async DeleteMessages(channelId, messages) {
-    const messageIds = Object.keys(messages);
-    for (let i = 0; i < messageIds.length; i++) {
-      return await FetchApi({
-        route: `channel/${channelId}/message/${messageIds[i]}`,
+    for (const [messageId] of Object.entries(messages)) {
+      await FetchApi({
+        route: `channel/${channelId}/message/${messageId}`,
         method: 'DELETE',
       });
     }
@@ -33,10 +32,11 @@ export default class ChatChannel {
     const { settings } = user;
     const { secretKey } = settings;
     let { beforeDate, afterDate } = settings;
-    let messages = [];
+    let messages = { length: 9999999 };
     let messageCount = 0;
-    do {
-      setAction('Loading topics');
+    let temp = 0;
+    while (messages?.length >= messageLimit) {
+      setAction('Loading messages');
       const messages = await FetchApi({
         route: `channel/${channelId}/messages`,
         headers: {
@@ -45,10 +45,9 @@ export default class ChatChannel {
           ...(messageLimit && { 'message-limit': messageLimit }),
         },
       });
-      console.log({ messages });
+
       if (!messages?.length) break;
       beforeDate = messages[messages.length - 1].createdAt;
-      console.log({ messages });
 
       const filteredMessages = Messages.FilterByUserAndMode(
         user.id,
@@ -56,7 +55,9 @@ export default class ChatChannel {
         decryptMode,
         deleteMode,
       );
-      if (!filteredMessages?.length) continue;
+      if (!filteredMessages?.length) {
+        continue;
+      }
       messageCount += filteredMessages.length;
 
       let newMessages;
@@ -76,7 +77,7 @@ export default class ChatChannel {
         setAction('Deleting messages');
         await ChatChannel.DeleteMessages(channelId, newMessages);
       }
-    } while (messages?.length >= messageLimit);
+    }
     return messageCount;
   }
 }

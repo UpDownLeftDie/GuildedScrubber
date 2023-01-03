@@ -30,8 +30,8 @@ export default class ApiService {
   static async RetryFetch({
     url,
     fetchOptions = {},
-    retries = 10,
-    retryDelay = 4000,
+    retries = 100,
+    retryDelay = 5000,
     timeout,
   }) {
     return new Promise((resolve, reject) => {

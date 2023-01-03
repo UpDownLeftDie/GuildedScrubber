@@ -13,9 +13,7 @@ export default class GuildedScrubber {
     const { mode, selectedChannels: channels } = settings;
 
     let totalItemCount = 0;
-    console.log({ channels });
     for (const [i, channel] of Array.from(channels).entries()) {
-      console.log({ i, channel });
       setChannelsCount(i + 1);
       totalItemCount += await this.ScrubChannel({
         user,

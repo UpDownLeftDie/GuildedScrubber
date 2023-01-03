@@ -1,22 +1,27 @@
 import Cookies from 'js-cookie';
 import fetch from 'node-fetch';
 
-export default function FetchApi({ route, method = 'GET', headers, data }) {
+export default async function FetchApi({
+  route,
+  method = 'GET',
+  headers,
+  data,
+}) {
   const hmac = Cookies.get('guilded-hmac');
-  return fetch(`/api/${route}`, {
+  const res = await fetch(`/api/${route}`, {
     method,
     headers: {
       ...headers,
       hmac,
     },
     ...(data ? { body: JSON.stringify(data) } : {}),
-  }).then((res) => {
-    if (res.ok) {
-      try {
-        return res.json();
-      } catch (error) {
-        return res.text();
-      }
-    }
   });
+
+  if (res.ok) {
+    try {
+      return res.json();
+    } catch (error) {
+      return res.text();
+    }
+  }
 }
