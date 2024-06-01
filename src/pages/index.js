@@ -70,6 +70,7 @@ const IndexPage = () => {
 
   return (
     <main style={pageStyles}>
+      <a class="github-fork-ribbon" href="https://github.com/UpDownLeftDie/GuildedScrubber" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
       <div style={headingStyles}>
         <h1>
           Guilded Scrubber
@@ -111,4 +112,10 @@ const IndexPage = () => {
 
 export default IndexPage;
 
-export const Head = () => <title>Home Page</title>;
+
+export const Head = () => (
+  <>
+    <title>Guilded Scrubber</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
+  </>
+)
