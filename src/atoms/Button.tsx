@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { MouseEventHandler } from "react";
 
 const style = {
   color: '#ececee',
@@ -10,6 +10,7 @@ const style = {
   fontWeight: 'bold',
 };
 
+type FlavorsKey = keyof typeof flavors;
 const flavors = {
   gold: {
     color: '#f5c400',
@@ -35,13 +36,21 @@ const flavors = {
   },
 };
 
+interface ButtonProps {
+  disabled?: boolean;
+  text: string;
+  type?: "button" | "submit" | "reset"
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  flavor?: FlavorsKey;
+}
 const Button = ({
   disabled = false,
   text,
   type = 'button',
   onClick,
   flavor,
-}) => {
+}: ButtonProps) => {
+
   const styles = {
     ...style,
     ...(flavor && flavors[flavor]),

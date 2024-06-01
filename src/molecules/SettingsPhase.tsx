@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, {  ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { ContentContainer } from '../templates';
 import { Input, Button } from '../atoms';
 import { Settings, DateFormatter, User } from '../classes';
@@ -48,7 +48,7 @@ const description = [
 
 interface props {
   user: User;
-  setUser: (user: User) => void;
+  setUser?: (user: User) => void;
   nextPhase: () => void;
   setIsLoading: Dispatch<SetStateAction<boolean>>
 }
@@ -70,8 +70,8 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
     return isValid;
   }
 
-  function handleModeChange(e) {
-    const mode = e.target.value;
+  function handleModeChange(event: ChangeEvent<HTMLSelectElement>) {
+    const mode = event.target.value as MODES
     settings.mode = mode;
     // setMode(mode);
     validateSettings();
@@ -89,9 +89,9 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
     handleDateChange(dateString, false);
   }
   function handleDateChange(dateString: string, isBefore: boolean) {
-    let date = new Date(dateString);
-    if (Number.isNaN(date)){
-      date = null;
+    let date = new Date(dateString)?.toISOString();
+    if (Number.isNaN(new Date(dateString))){
+      date = '';
     }
     if (isBefore) {
       settings.beforeDate = date;
@@ -103,12 +103,12 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
     validateSettings();
   }
 
-  function handleOnSubmit(e) {
-    e.preventDefault();
+  function handleOnSubmit(event: FormEvent) {
+    event.preventDefault();
     const isValid = validateSettings();
     if (isValid) {
-      settings.beforeDate = settings.beforeDate && beforeDate.toISOString();
-      settings.afterDate = settings.afterDate && afterDate.toISOString();
+      settings.beforeDate = settings.beforeDate && beforeDate;
+      settings.afterDate = settings.afterDate && afterDate;
       user.settings = settings;
       nextPhase();
     }
@@ -141,14 +141,12 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
           ) : null}
           <Input
             type="datetime-local"
-            id="afterDate"
             label="After Date (optional)"
             value={DateFormatter.FormatDate(afterDate)}
             onChange={handleAfterDateChange}
           />
           <Input
             type="datetime-local"
-            id="beforeDate"
             label="Before Date (optional)"
             value={DateFormatter.FormatDate(beforeDate)}
             onChange={handleBeforeDateChange}

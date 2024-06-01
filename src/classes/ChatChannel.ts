@@ -2,7 +2,7 @@ import Messages from './Messages';
 import FetchApi from './FetchApi';
 
 export default class ChatChannel {
-  static async UpdateMessages(channelId, messages) {
+  static async UpdateMessages(channelId: string, messages) {
     for (const [messageId, data] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
@@ -12,7 +12,7 @@ export default class ChatChannel {
     }
   }
 
-  static async DeleteMessages(channelId, messages) {
+  static async DeleteMessages(channelId: string, messages) {
     for (const [messageId] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,

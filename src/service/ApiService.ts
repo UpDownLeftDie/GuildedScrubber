@@ -45,11 +45,11 @@ export default class ApiService {
     timeout,
   }: {
     url: string;
-    fetchOptions: any;
-    retries: number;
-    retryDelay: number;
+    fetchOptions?: any;
+    retries?: number;
+    retryDelay?: number;
     timeout?: number;
-  }) {
+  }): Promise<fetch.Response> {
     return new Promise((resolve, reject) => {
       // check for timeout
       if (timeout) setTimeout(() => reject('error: timeout'), timeout);

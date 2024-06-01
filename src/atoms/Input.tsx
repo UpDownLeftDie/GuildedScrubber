@@ -1,23 +1,36 @@
-import * as React from 'react';
+import { ChangeEvent,FocusEvent, HTMLInputTypeAttribute } from 'react';
 
+interface InputProps {
+  label: string;
+  placeholder?: string;
+  value: string;
+  required?: boolean;
+  onChange?: Function;
+  onBlur?: Function;
+  maxLength?: number;
+  minLength?: number;
+  disabled?: boolean;
+  type?: HTMLInputTypeAttribute;
+}
 const Input = ({
   label,
   placeholder,
   value,
+  required=false,
   onChange,
   onBlur,
   maxLength,
   minLength,
   disabled,
   type = 'text',
-}) => {
-  const handleOnChange = (e) => {
-    const value = e.target.value;
+}: InputProps) => {
+  const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
     onChange?.(value);
   };
 
-  const handleOnBlur = (e) => {
-    const value = e.target.value;
+  const handleOnBlur = (event: FocusEvent<HTMLInputElement>) => {
+    const value = event.target.value;
     onBlur?.(value);
   };
 
@@ -30,6 +43,7 @@ const Input = ({
         value={value}
         placeholder={placeholder}
         type={type}
+        required={required}
         onChange={handleOnChange}
         onBlur={handleOnBlur}
         maxLength={maxLength}

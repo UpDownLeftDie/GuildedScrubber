@@ -1,7 +1,7 @@
 export enum MODES {
-  ENCRYPT,
-  DECRYPT,
-  DELETE,
+  ENCRYPT = 'encrypt',
+  DECRYPT = 'decrypt',
+  DELETE = 'delete',
 }
 
 export default class Settings {
@@ -15,16 +15,16 @@ export default class Settings {
 
   mode: MODES;
   secretKey: string;
-  beforeDate?: null;
-  afterDate?: null;
+  beforeDate?: string;
+  afterDate?: string;
   selectedTeams: Map<any, any>;
   selectedChannels: Map<any, any>;
 
   constructor({
     mode = MODES.ENCRYPT,
     secretKey = '',
-    beforeDate = null,
-    afterDate = null,
+    beforeDate = undefined,
+    afterDate = undefined,
   } = {}) {
     this.mode = mode;
     this.secretKey = secretKey;

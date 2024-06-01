@@ -36,7 +36,7 @@ const description = [
 interface props {
   hmac: string;
   user: User;
-  setUser: boolean;
+  setUser?: boolean;
   isLoading: boolean;
   setIsLoading: any;
   nextPhase: any;

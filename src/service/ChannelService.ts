@@ -10,9 +10,9 @@ export default class ChannelService {
   }: {
     hmac: string;
     channelId: string;
-    messageLimit: number;
-    beforeDate: string;
-    afterDate: string;
+    messageLimit?: number;
+    beforeDate?: string;
+    afterDate?: string;
   }) {
     const { messages } = await _getMessages({
       hmac,
@@ -35,9 +35,9 @@ export default class ChannelService {
   }: {
     hmac: string;
     channelId: string;
-    maxItems: number;
-    beforeDate: string;
-    afterDate: string;
+    maxItems?: number;
+    beforeDate?: string;
+    afterDate?: string;
   }) {
     const { announcements } = await _getAnnouncements({
       hmac,
@@ -61,7 +61,7 @@ async function _getMessages({
 }: {
   hmac: string;
   channelId: string;
-  messageLimit: number;
+  messageLimit?: number;
   beforeDate?: string;
   afterDate?: string;
 }) {
@@ -97,7 +97,7 @@ async function _getAnnouncements({
 }: {
   hmac: string;
   channelId: string;
-  maxItems: number;
+  maxItems?: number;
   beforeDate?: string;
   afterDate?: string;
 }) {
