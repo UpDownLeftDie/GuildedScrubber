@@ -1,13 +1,13 @@
-import { v4 as uuid } from 'uuid';
-import fetch from 'node-fetch';
+import { v4 as uuid } from "uuid";
+import fetch from "node-fetch";
 
-const API_URL = 'https://www.guilded.gg/api';
+const API_URL = "https://www.guilded.gg/api";
 
 export default class ApiService {
   static async FetchGuilded({
     hmac,
     url,
-    method = 'GET',
+    method = "GET",
     body,
   }: {
     hmac: string;
@@ -21,15 +21,15 @@ export default class ApiService {
       fetchOptions: {
         method,
         headers: {
-          authority: 'www.guilded.gg',
-          accept: 'application/json, text/javascript, */*; q=0.01',
-          'cache-control': 'no-cache',
-          'content-type': 'application/json',
+          authority: "www.guilded.gg",
+          accept: "application/json, text/javascript, */*; q=0.01",
+          "cache-control": "no-cache",
+          "content-type": "application/json",
           cookie: `hmac_signed_session=${hmac}; authenticated=true;`,
-          'guilded-client-id': uuid(),
-          pragma: 'no-cache',
-          'sec-fetch-mode': 'cors',
-          'sec-fetch-site': 'none',
+          "guilded-client-id": uuid(),
+          pragma: "no-cache",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "none",
         },
         body,
       },
@@ -52,7 +52,7 @@ export default class ApiService {
   }): Promise<fetch.Response> {
     return new Promise((resolve, reject) => {
       // check for timeout
-      if (timeout) setTimeout(() => reject('error: timeout'), timeout);
+      if (timeout) setTimeout(() => reject("error: timeout"), timeout);
 
       const wrapper = (n: number) => {
         fetch(url, fetchOptions)

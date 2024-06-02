@@ -1,11 +1,10 @@
-import Announcements from './AnnouncementChannel';
-import ChatChannel from './ChatChannel';
-import ForumChannel from './ForumChannel';
-import Settings from './Settings';
-import Channel from './Channel';
+import Announcements from "./AnnouncementChannel";
+import ChatChannel from "./ChatChannel";
+import ForumChannel from "./ForumChannel";
+import Settings from "./Settings";
+import Channel from "./Channel";
 
-const { CHANNEL_TYPES, CHAT_CHANNELS, TOPIC_CHANNELS, DELETE_CHANNELS } =
-  Channel;
+const { CHANNEL_TYPES, CHAT_CHANNELS, TOPIC_CHANNELS, DELETE_CHANNELS } = Channel;
 
 export default class GuildedScrubber {
   static async ScrubChannels(user, setChannelsCount, setAction, setHistory) {
@@ -23,9 +22,7 @@ export default class GuildedScrubber {
         setAction,
       });
     }
-    setAction(
-      `Done! Scrubbed ${totalItemCount} messages in ${channels.size} channels.`,
-    );
+    setAction(`Done! Scrubbed ${totalItemCount} messages in ${channels.size} channels.`);
   }
 
   static async ScrubChannel({ user, channelId, channelType, mode, setAction }) {

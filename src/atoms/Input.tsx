@@ -1,4 +1,4 @@
-import { ChangeEvent,FocusEvent, HTMLInputTypeAttribute } from 'react';
+import { ChangeEvent, FocusEvent, HTMLInputTypeAttribute } from "react";
 
 interface InputProps {
   label: string;
@@ -16,13 +16,13 @@ const Input = ({
   label,
   placeholder,
   value,
-  required=false,
+  required = false,
   onChange,
   onBlur,
   maxLength,
   minLength,
   disabled,
-  type = 'text',
+  type = "text",
 }: InputProps) => {
   const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -34,7 +34,7 @@ const Input = ({
     onBlur?.(value);
   };
 
-  const forId = `${label.split(' ').join('')}-input`;
+  const forId = `${label.split(" ").join("")}-input`;
   return (
     <>
       <label htmlFor={forId}>{label}: </label>

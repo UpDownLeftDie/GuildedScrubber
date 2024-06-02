@@ -1,3 +1,3 @@
-import ContentContainer from './ContentContainer';
+import ContentContainer from "./ContentContainer";
 
 export { ContentContainer };

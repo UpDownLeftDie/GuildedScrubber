@@ -1,16 +1,13 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { ChannelService } from '../../../../service';
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+import { NextApiRequest, NextApiResponse } from "next";
+import { ChannelService } from "../../../../service";
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
     const { channelId } = req.query;
     const {
       hmac,
-      'message-limit': messageLimit,
-      'before-date': beforeDate,
-      'after-date': afterDate,
+      "message-limit": messageLimit,
+      "before-date": beforeDate,
+      "after-date": afterDate,
     } = req.headers;
     const messages = await ChannelService.GetMessages({
       hmac,

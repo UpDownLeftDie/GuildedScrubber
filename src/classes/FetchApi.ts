@@ -1,9 +1,9 @@
-import Cookies from 'js-cookie';
-import fetch from 'node-fetch';
+import Cookies from "js-cookie";
+import fetch from "node-fetch";
 
 export default async function FetchApi({
   route,
-  method = 'GET',
+  method = "GET",
   headers,
   data,
 }: {
@@ -12,7 +12,7 @@ export default async function FetchApi({
   headers?: any;
   data?: any;
 }) {
-  const hmac = Cookies.get('guilded-hmac');
+  const hmac = Cookies.get("guilded-hmac");
   const res = await fetch(`/api/${route}`, {
     method,
     headers: {

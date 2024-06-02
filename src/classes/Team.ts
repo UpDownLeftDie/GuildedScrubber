@@ -1,15 +1,15 @@
-import FetchApi from './FetchApi';
+import FetchApi from "./FetchApi";
 
 export default class Team {
   id: string;
   channels: any;
   categories: any;
-  name: string = '';
-  ownerId: string = '';
+  name: string = "";
+  ownerId: string = "";
   isAdmin: boolean = false;
-  subdomain: string = '';
-  profilePicture: string = '';
-  teamDashImage: string = '';
+  subdomain: string = "";
+  profilePicture: string = "";
+  teamDashImage: string = "";
 
   constructor(id: string, storedTeam?: Team) {
     this.id = id;
@@ -22,10 +22,10 @@ export default class Team {
   async init({
     name,
     isAdmin = false,
-    ownerId = '',
-    subdomain = '',
-    profilePicture = '',
-    teamDashImage = '',
+    ownerId = "",
+    subdomain = "",
+    profilePicture = "",
+    teamDashImage = "",
   }: {
     name: string;
     isAdmin: boolean;

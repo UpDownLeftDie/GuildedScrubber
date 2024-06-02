@@ -1,9 +1,9 @@
-import React from 'react';
-import { Input, Button } from '../atoms';
+import React from "react";
+import { Input, Button } from "../atoms";
 
 const style = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
 };
 
 const InputWithSubmit = (props) => {
@@ -15,12 +15,7 @@ const InputWithSubmit = (props) => {
     inputDisabled = false,
     inputMaxLength,
   } = props;
-  const {
-    submitDisabled = false,
-    submitText,
-    submitOnClick,
-    submitFlavor,
-  } = props;
+  const { submitDisabled = false, submitText, submitOnClick, submitFlavor } = props;
 
   return (
     <div style={{ ...style, ...props.style }}>

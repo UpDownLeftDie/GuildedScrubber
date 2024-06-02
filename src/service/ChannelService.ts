@@ -1,4 +1,4 @@
-import ApiService from './ApiService';
+import ApiService from "./ApiService";
 
 export default class ChannelService {
   static async GetMessages({
@@ -66,9 +66,9 @@ async function _getMessages({
   afterDate?: string;
 }) {
   let params = new URLSearchParams();
-  params.append('limit', messageLimit.toString());
-  if (beforeDate) params.append('beforeDate', beforeDate);
-  if (afterDate) params.append('afterDate', afterDate);
+  params.append("limit", messageLimit.toString());
+  if (beforeDate) params.append("beforeDate", beforeDate);
+  if (afterDate) params.append("afterDate", afterDate);
   const url = `/channels/${channelId}/messages?${params.toString()}`;
   const res = await ApiService.FetchGuilded({ hmac, url });
   const { threads = [] } = res;
@@ -102,9 +102,9 @@ async function _getAnnouncements({
   afterDate?: string;
 }) {
   let params = new URLSearchParams();
-  params.append('maxItems', maxItems.toString());
-  if (beforeDate) params.append('beforeDate', beforeDate);
-  if (afterDate) params.append('afterDate', afterDate);
+  params.append("maxItems", maxItems.toString());
+  if (beforeDate) params.append("beforeDate", beforeDate);
+  if (afterDate) params.append("afterDate", afterDate);
   const url = `/channels/${channelId}/announcements?${params.toString()}`;
 
   const { announcements = [] } = await ApiService.FetchGuilded({ hmac, url });

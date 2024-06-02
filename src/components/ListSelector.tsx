@@ -1,18 +1,18 @@
-import React, { useReducer } from 'react';
-import { Button, Checkbox } from '../atoms';
+import React, { useReducer } from "react";
+import { Button, Checkbox } from "../atoms";
 
 const style = {
-  textAlign: 'left',
+  textAlign: "left",
 };
 
 const selectAllStyles = {
-  fontWeight: 'bold',
+  fontWeight: "bold",
   marginBottom: 5,
 };
 
 const selectionListStyles = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   marginBottom: 20,
 };
 
@@ -21,9 +21,9 @@ const selectionBoxStyles = {
 };
 
 const ACTION_TYPE = {
-  SINGLE: 'SINGLE',
-  ALL: 'ALL',
-  SINGLE_ENTRY: 'SINGLE_ENTRY',
+  SINGLE: "SINGLE",
+  ALL: "ALL",
+  SINGLE_ENTRY: "SINGLE_ENTRY",
 };
 
 const checkedReducer = (prevState, action) => {
@@ -51,8 +51,8 @@ const checkedReducer = (prevState, action) => {
       break;
 
     case ACTION_TYPE.SINGLE_ENTRY:
-      sectionState.delete('_self');
-      if (checked) sectionState.add('_self');
+      sectionState.delete("_self");
+      if (checked) sectionState.add("_self");
       state.set(sectionName, sectionState);
       return state;
 
@@ -61,9 +61,9 @@ const checkedReducer = (prevState, action) => {
   }
 
   sectionState = state.get(sectionName);
-  sectionState.delete('_all');
+  sectionState.delete("_all");
   if (checked && sectionState.size === section.items?.size) {
-    sectionState.add('_all');
+    sectionState.add("_all");
     state.set(sectionName, sectionState);
   }
 
@@ -73,23 +73,20 @@ const checkedReducer = (prevState, action) => {
 const ListSelector = ({
   selectableList,
   onSubmit = () => {},
-  submitLabel = 'Submit',
-  listName = '',
+  submitLabel = "Submit",
+  listName = "",
   isLoading,
-  forFrom = 'from',
+  forFrom = "from",
   flavor,
 }) => {
-  const [isChecked, dispatchCheck] = useReducer(
-    checkedReducer,
-    selectableList.isChecked,
-  );
+  const [isChecked, dispatchCheck] = useReducer(checkedReducer, selectableList.isChecked);
 
   const checkedCount = getCheckedCount();
   function getCheckedCount() {
     let checkedTotal = 0;
     for (const section of isChecked.values()) {
       checkedTotal += section.size;
-      if (section.has('_all')) checkedTotal--;
+      if (section.has("_all")) checkedTotal--;
     }
     return checkedTotal;
   }
@@ -113,14 +110,11 @@ const ListSelector = ({
   function convertCollectionArray() {
     const list = selectableList.sections.reduce((list, section) => {
       const { name: sectionName, items } = section;
-      const selectAllName = `selectAll-${sectionName.split(' ').join('')}`;
+      const selectAllName = `selectAll-${sectionName.split(" ").join("")}`;
       const isSingleEntry = items ? false : true;
-      const selectAllLabel = `${
-        isSingleEntry ? '' : 'Select All - '
-      }${sectionName}`;
+      const selectAllLabel = `${isSingleEntry ? "" : "Select All - "}${sectionName}`;
       const selectAllChecked =
-        isChecked.get(sectionName)?.has?.('_all') ||
-        isChecked.get(sectionName)?.has?.('_self');
+        isChecked.get(sectionName)?.has?.("_all") || isChecked.get(sectionName)?.has?.("_self");
 
       const selectAll = (
         <div key={selectAllName} style={selectAllStyles}>
@@ -131,9 +125,7 @@ const ListSelector = ({
               handleCheck({
                 e,
                 sectionName,
-                type: isSingleEntry
-                  ? ACTION_TYPE.SINGLE_ENTRY
-                  : ACTION_TYPE.ALL,
+                type: isSingleEntry ? ACTION_TYPE.SINGLE_ENTRY : ACTION_TYPE.ALL,
               })
             }
             checked={selectAllChecked}
@@ -181,9 +173,7 @@ const ListSelector = ({
         <Button
           disabled={isLoading || checkedCount < 1}
           type="submit"
-          text={`${submitLabel} ${forFrom} ${checkedCount} ${
-            checkedCount > 1 ? `${listName}s` : listName
-          }`}
+          text={`${submitLabel} ${forFrom} ${checkedCount} ${checkedCount > 1 ? `${listName}s` : listName}`}
           flavor={flavor}
         />
       </form>

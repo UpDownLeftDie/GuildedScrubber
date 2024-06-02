@@ -1,4 +1,4 @@
-import ApiService from './ApiService';
+import ApiService from "./ApiService";
 
 export default class UserService {
   static async GetUser(hmac) {

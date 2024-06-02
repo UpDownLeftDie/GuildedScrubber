@@ -1,38 +1,33 @@
-import React, {  ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from 'react';
-import { ContentContainer } from '../templates';
-import { Input, Button } from '../atoms';
-import { Settings, DateFormatter, User } from '../classes';
-import { ErrorList } from '../components';
-import { MODES } from '@/classes/Settings';
+import React, { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from "react";
+import { ContentContainer } from "../templates";
+import { Input, Button } from "../atoms";
+import { Settings, DateFormatter, User } from "../classes";
+import { ErrorList } from "../components";
+import { MODES } from "@/classes/Settings";
 const { SecretKeyLength } = Settings;
 
 const styles = {
-  display: 'flex',
-  flexDirection: 'column' as const,
+  display: "flex",
+  flexDirection: "column" as const,
 };
 
 const description = [
   "Warning: GuildedScrubber is provided as-is and doesn't guarantee messages will be recoverable or decryptable. Encrypt and decrypt are provided simply as option but my cause data loss and should not be relied upon for anything but another method of deletion.",
-  <br key="br1"/>,
-  <br key="br2"/>,
-  <br key="br3"/>,
+  <br key="br1" />,
+  <br key="br2" />,
+  <br key="br3" />,
   <ul key="ul">
     <li>
       Delete:
       <ul>
-        <li>
-          Deletes all your messages after replacing them with generic message
-        </li>
+        <li>Deletes all your messages after replacing them with generic message</li>
         <li>This increases privacy over simply deleting them</li>
       </ul>
     </li>
     <li>
       Encrypt:
       <ul>
-        <li>
-          SAVE YOUR SECRET_KEY: it is the only thing that can recover encrypted
-          messages
-        </li>
+        <li>SAVE YOUR SECRET_KEY: it is the only thing that can recover encrypted messages</li>
         <li>Enter a secretKey that is exactly 32-characters long</li>
       </ul>
     </li>
@@ -50,7 +45,7 @@ interface props {
   user: User;
   setUser?: (user: User) => void;
   nextPhase: () => void;
-  setIsLoading: Dispatch<SetStateAction<boolean>>
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }
 const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
   const [errors, setErrors] = useState({});
@@ -71,7 +66,7 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
   }
 
   function handleModeChange(event: ChangeEvent<HTMLSelectElement>) {
-    const mode = event.target.value as MODES
+    const mode = event.target.value as MODES;
     settings.mode = mode;
     // setMode(mode);
     validateSettings();
@@ -90,8 +85,8 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
   }
   function handleDateChange(dateString: string, isBefore: boolean) {
     let date = new Date(dateString)?.toISOString();
-    if (Number.isNaN(new Date(dateString))){
-      date = '';
+    if (Number.isNaN(new Date(dateString))) {
+      date = "";
     }
     if (isBefore) {
       settings.beforeDate = date;
@@ -115,7 +110,7 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
   }
 
   return (
-    <ContentContainer headerText={'Settings'} description={description}>
+    <ContentContainer headerText={"Settings"} description={description}>
       <>
         <ErrorList errors={errors} />
         <form style={styles} onSubmit={handleOnSubmit}>
@@ -123,9 +118,7 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
           <select id="mode" name="mode" onChange={handleModeChange}>
             <option value={MODES.ENCRYPT}>Encrypt Messages</option>
             <option value={MODES.DECRYPT}>Decrypt Messages</option>
-            <option value={MODES.DELETE}>
-              Delete Messages (unrecoverable!)
-            </option>
+            <option value={MODES.DELETE}>Delete Messages (unrecoverable!)</option>
           </select>
           {showSecretKey ? (
             <Input
@@ -151,11 +144,7 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
             value={DateFormatter.FormatDate(beforeDate)}
             onChange={handleBeforeDateChange}
           />
-          <Button
-            disabled={disableSubmit}
-            type="submit"
-            text="Next: Select Teams"
-          />
+          <Button disabled={disableSubmit} type="submit" text="Next: Select Teams" />
         </form>
       </>
     </ContentContainer>

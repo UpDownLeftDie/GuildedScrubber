@@ -1,12 +1,12 @@
-import Messages from './Messages';
-import FetchApi from './FetchApi';
+import Messages from "./Messages";
+import FetchApi from "./FetchApi";
 
 export default class ChatChannel {
   static async UpdateMessages(channelId: string, messages) {
     for (const [messageId, data] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
-        method: 'PUT',
+        method: "PUT",
         data,
       });
     }
@@ -16,19 +16,12 @@ export default class ChatChannel {
     for (const [messageId] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
-        method: 'DELETE',
+        method: "DELETE",
       });
     }
   }
 
-  static async Process({
-    user,
-    channelId,
-    setAction,
-    deleteMode,
-    decryptMode,
-    messageLimit,
-  }) {
+  static async Process({ user, channelId, setAction, deleteMode, decryptMode, messageLimit }) {
     const { settings } = user;
     const { secretKey } = settings;
     let { beforeDate, afterDate } = settings;
@@ -36,13 +29,13 @@ export default class ChatChannel {
     let messageCount = 0;
     let temp = 0;
     while (messages?.length >= messageLimit) {
-      setAction('Loading messages');
+      setAction("Loading messages");
       const messages = await FetchApi({
         route: `channel/${channelId}/messages`,
         headers: {
-          ...(beforeDate && { 'before-date': beforeDate }),
-          ...(afterDate && { 'after-date': afterDate }),
-          ...(messageLimit && { 'message-limit': messageLimit }),
+          ...(beforeDate && { "before-date": beforeDate }),
+          ...(afterDate && { "after-date": afterDate }),
+          ...(messageLimit && { "message-limit": messageLimit }),
         },
       });
 
@@ -63,18 +56,16 @@ export default class ChatChannel {
       let newMessages;
       const texts = Messages.GetTextFromContent(filteredMessages);
       if (decryptMode) {
-        setAction('Decrypting messages');
+        setAction("Decrypting messages");
         newMessages = Messages.DecryptTexts(texts, secretKey);
       } else {
-        setAction(
-          deleteMode ? 'Prepping message for delete' : 'Encrypting messages',
-        );
+        setAction(deleteMode ? "Prepping message for delete" : "Encrypting messages");
         newMessages = Messages.EncryptTexts(texts, secretKey, deleteMode);
       }
 
       await ChatChannel.UpdateMessages(channelId, newMessages);
       if (deleteMode) {
-        setAction('Deleting messages');
+        setAction("Deleting messages");
         await ChatChannel.DeleteMessages(channelId, newMessages);
       }
     }

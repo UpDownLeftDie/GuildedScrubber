@@ -1,4 +1,4 @@
-import ApiService from './ApiService';
+import ApiService from "./ApiService";
 
 export default class TeamService {
   static async GetChannels(hmac: string, teamId: string) {

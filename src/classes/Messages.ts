@@ -1,6 +1,6 @@
-import crypto from 'crypto';
-const algorithm = 'aes-256-ctr';
-const ivSearchStr = ' IV: ';
+import crypto from "crypto";
+const algorithm = "aes-256-ctr";
+const ivSearchStr = " IV: ";
 
 export default class Messages {
   static FilterByUserAndMode(userId, messages, decryptMode, deleteMode) {
@@ -21,7 +21,7 @@ export default class Messages {
     const texts = {};
     for (const item of items) {
       texts[item.id] = {
-        text: findTextInNodes(item.content.document.nodes, ''),
+        text: findTextInNodes(item.content.document.nodes, ""),
         channelId: item.channelId,
       };
     }
@@ -31,9 +31,7 @@ export default class Messages {
   static EncryptTexts(texts, secretKey, deleteMode = false) {
     let encryptedTexts = {};
     Object.entries(texts).forEach(([messageId, messageInfo]) => {
-      const text = deleteMode
-        ? '[deleted for privacy]'
-        : encrypt(messageInfo.text, secretKey);
+      const text = deleteMode ? "[deleted for privacy]" : encrypt(messageInfo.text, secretKey);
 
       encryptedTexts[messageId] = buildMessageContent(text);
     });
@@ -45,14 +43,9 @@ export default class Messages {
     Object.entries(texts).forEach(([messageId, messageInfo]) => {
       const messageText = messageInfo.text;
       const ivIndex = messageText.indexOf(ivSearchStr);
-      const iv = Buffer.from(
-        messageText.slice(ivIndex + 5, messageText.length),
-        'hex',
-      );
+      const iv = Buffer.from(messageText.slice(ivIndex + 5, messageText.length), "hex");
       const text = messageText.slice(0, ivIndex);
-      decryptedMessageContents[messageId] = buildMessageContent(
-        decrypt(text, secretKey, iv),
-      );
+      decryptedMessageContents[messageId] = buildMessageContent(decrypt(text, secretKey, iv));
     });
     return decryptedMessageContents;
   }
@@ -60,12 +53,12 @@ export default class Messages {
 
 function findTextInNodes(nodes, string, depth = 0) {
   nodes.forEach((node) => {
-    if (node.object === 'text') {
+    if (node.object === "text") {
       const tempStr = node.leaves
         .reduce((text, leaf) => {
           if (leaf.text) return `${text}${leaf.text} `;
           return text;
-        }, '')
+        }, "")
         .trim();
       string = `${string} ${tempStr}`;
     } else if (node?.nodes?.length) {
@@ -81,16 +74,13 @@ function encrypt(text, secretKey) {
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
 
-  return `${encrypted.toString('hex')}${ivSearchStr}${iv.toString('hex')}`;
+  return `${encrypted.toString("hex")}${ivSearchStr}${iv.toString("hex")}`;
 }
 
 function decrypt(text, secretKey, iv) {
   const decipher = crypto.createDecipheriv(algorithm, secretKey, iv);
 
-  const decrypted = Buffer.concat([
-    decipher.update(Buffer.from(text, 'hex')),
-    decipher.final(),
-  ]);
+  const decrypted = Buffer.concat([decipher.update(Buffer.from(text, "hex")), decipher.final()]);
 
   return decrypted.toString();
 }
@@ -98,21 +88,21 @@ function decrypt(text, secretKey, iv) {
 function buildMessageContent(contentText) {
   return {
     content: {
-      object: 'value',
+      object: "value",
       document: {
-        object: 'document',
+        object: "document",
         data: {},
         nodes: [
           {
-            object: 'block',
-            type: 'paragraph',
+            object: "block",
+            type: "paragraph",
             data: {},
             nodes: [
               {
-                object: 'text',
+                object: "text",
                 leaves: [
                   {
-                    object: 'leaf',
+                    object: "leaf",
                     text: contentText,
                     marks: [],
                   },

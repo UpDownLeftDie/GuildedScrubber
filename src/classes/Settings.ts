@@ -1,7 +1,7 @@
 export enum MODES {
-  ENCRYPT = 'encrypt',
-  DECRYPT = 'decrypt',
-  DELETE = 'delete',
+  ENCRYPT = "encrypt",
+  DECRYPT = "decrypt",
+  DELETE = "delete",
 }
 
 export default class Settings {
@@ -9,7 +9,7 @@ export default class Settings {
 
   static #ERRORS = {
     DATES_ORDER: "Invalid Dates: beforeDate can't be earlier than afterDate",
-    SECRET_KEY_NOT_FOUND: 'No secret key set!',
+    SECRET_KEY_NOT_FOUND: "No secret key set!",
     SECRET_KEY_LENGTH: `SecretKey *must* be ${Settings.SecretKeyLength} characters long`,
   };
 
@@ -22,7 +22,7 @@ export default class Settings {
 
   constructor({
     mode = MODES.ENCRYPT,
-    secretKey = '',
+    secretKey = "",
     beforeDate = undefined,
     afterDate = undefined,
   } = {}) {

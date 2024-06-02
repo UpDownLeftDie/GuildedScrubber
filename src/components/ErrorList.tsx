@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ErrorList = ({ errors }) => {
   const errorsList = Object.entries(errors).map(([errorType, error]) => {

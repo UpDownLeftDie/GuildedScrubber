@@ -1,7 +1,7 @@
-import Cookies from 'js-cookie';
-import { Team } from '.';
-import FetchApi from './FetchApi';
-import Settings from './Settings';
+import Cookies from "js-cookie";
+import { Team } from ".";
+import FetchApi from "./FetchApi";
+import Settings from "./Settings";
 
 interface GuildedUser {
   id: string;
@@ -25,17 +25,17 @@ export default class User {
   name: string;
 
   constructor() {
-    this.hmac = Cookies.get('guilded-hmac') || '';
+    this.hmac = Cookies.get("guilded-hmac") || "";
     this.guildedUser = {};
     this.settings = new Settings();
     this.teams = new Map();
-    this.id = '';
-    this.name = '';
+    this.id = "";
+    this.name = "";
   }
 
   async LoadUser(hmac: string) {
     this.#setHmac(hmac);
-    const guildedUser = (await FetchApi({ route: 'user' })) as GuildedUser;
+    const guildedUser = (await FetchApi({ route: "user" })) as GuildedUser;
 
     this.guildedUser = guildedUser;
     this.id = guildedUser.id;
@@ -44,30 +44,26 @@ export default class User {
   }
 
   async LoadDMs() {
-    if (this?.teams?.has('DMs')) return;
+    if (this?.teams?.has("DMs")) return;
 
     const dmChannels = (await FetchApi({
       route: `user/${this.id}/dms`,
     })) as GuildedDMChannel[];
     const channels = dmChannels.map((channel) => {
       if (channel.name) return channel;
-      const users = channel.users
-        .filter((user) => user.id !== this.id)
-        .map((user) => user.name);
-      const name = users.length ? users.join(', ') : 'You';
+      const users = channel.users.filter((user) => user.id !== this.id).map((user) => user.name);
+      const name = users.length ? users.join(", ") : "You";
       channel.name = name;
       return channel;
     });
-    const dms = new Team('DMs', { channels });
-    dms.init({ name: 'DMs', isAdmin: false });
-    this.teams.set('DMs', dms);
+    const dms = new Team("DMs", { channels });
+    dms.init({ name: "DMs", isAdmin: false });
+    this.teams.set("DMs", dms);
 
     this.#saveTeams(this.teams);
   }
 
-  async LoadTeams(
-    guildedUserTeams: GuildedUserTeam[],
-  ): Promise<Map<string, Team>> {
+  async LoadTeams(guildedUserTeams: GuildedUserTeam[]): Promise<Map<string, Team>> {
     const userTeams = new Map(
       guildedUserTeams.map((team) => {
         return [team.id, team];
@@ -88,15 +84,15 @@ export default class User {
   }
 
   #loadTeams(): Map<string, Team> {
-    return new Map(JSON.parse(localStorage.getItem('teams') || '[]'));
+    return new Map(JSON.parse(localStorage.getItem("teams") || "[]"));
   }
 
   #saveTeams(teams: Map<string, Team>) {
-    localStorage.setItem('teams', JSON.stringify(Array.from(teams.entries())));
+    localStorage.setItem("teams", JSON.stringify(Array.from(teams.entries())));
   }
 
   #setHmac(hmac: string) {
-    Cookies.set('guilded-hmac', hmac);
+    Cookies.set("guilded-hmac", hmac);
     this.hmac = hmac;
   }
 }

@@ -1,24 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { GuildedScrubber } from '../classes';
-import { ContentContainer } from '../templates';
+import React, { useState, useEffect } from "react";
+import { GuildedScrubber, User } from "../classes";
+import { ContentContainer } from "../templates";
 
-const Progress = ({ user }) => {
+interface props {
+  user: User;
+}
+const Progress = ({ user }: props) => {
   const [channelsCount, setChannelsCount] = useState(1);
-  const [action, setAction] = useState('');
+  const [action, setAction] = useState("");
   const [history, setHistory] = useState({});
   let totalChannels = user.settings.selectedChannels.size;
 
   useEffect(() => {
-    GuildedScrubber.ScrubChannels(
-      user,
-      setChannelsCount,
-      setAction,
-      setHistory,
-    );
+    GuildedScrubber.ScrubChannels(user, setChannelsCount, setAction, setHistory);
   }, []);
 
   return (
-    <ContentContainer headerText={'Scrubbing...'}>
+    <ContentContainer headerText={"Scrubbing..."}>
       {channelsCount} of {totalChannels} Channels
       <br />
       <progress value={channelsCount} max={totalChannels} />
@@ -30,7 +28,8 @@ const Progress = ({ user }) => {
         <a
           href={`mailto:support@guilded.gg?subject=GDPR Account Deletion Request&body=I would like to withdrawal consent, restriction processing, and request full erasure of all my personal data. My UserId is ${user.id}`}
           target="_blank"
-          rel="noopener noreferrer nofollow">
+          rel="noopener noreferrer nofollow"
+        >
           Request account deletion
         </a>
         <br />
@@ -38,9 +37,8 @@ const Progress = ({ user }) => {
         <br />
         Email: support@guilded.gg
         <br />
-        Message: I would like to withdrawal consent, restriction processing, and
-        request full erasure of all my personal data under GDPR. My UserId is{' '}
-        {user.id}
+        Message: I would like to withdrawal consent, restriction processing, and request full
+        erasure of all my personal data under GDPR. My UserId is {user.id}
       </div>
     </ContentContainer>
   );
