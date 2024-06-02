@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ForumService } from '../../../service';
+import { ForumService } from '../../../../service';
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

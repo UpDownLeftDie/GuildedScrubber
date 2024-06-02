@@ -6,11 +6,10 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method === `GET`) {
-    const { hmac } = req.headers;
-    const { userId } = req.query;
-    // Fetch DMs
-    const dms = await UserService.GetDMChannels(hmac, userId);
-    res.json(dms);
+    const hmac = req.headers.hmac;
+    // Fetch user
+    const user = await UserService.GetUser(hmac);
+    res.json(user);
   } else {
     res.status(501);
   }

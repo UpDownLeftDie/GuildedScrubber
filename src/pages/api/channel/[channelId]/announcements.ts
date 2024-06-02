@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ChannelService } from '../../../service';
+import { ChannelService } from '../../../../service';
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

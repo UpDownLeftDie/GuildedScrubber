@@ -1,7 +1,7 @@
 // https://www.guilded.gg/api/content/announcement/V6XpoZo6/replies
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import ReplyService from '../../../../service/ReplyService';
+import ReplyService from '../../../../../service/ReplyService';
 
 export default async function handler(
   req: NextApiRequest,
