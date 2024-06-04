@@ -40,7 +40,7 @@ interface props {
   setUser: Dispatch<SetStateAction<User>>;
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
-  nextPhase:  () => void;
+  nextPhase: () => void;
 }
 
 const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase }: props) => {
@@ -50,7 +50,7 @@ const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase
     setIsLoading(true);
     setUser(await user.LoadUser(hmacInput));
     setIsLoading(false);
-    console.log(user.settings)
+    console.log(user.settings);
 
     nextPhase();
   };

@@ -22,7 +22,7 @@ export default class Settings {
   beforeDate?: Date;
   afterDate?: Date;
   selectedTeams: Map<any, Team>;
-  selectedChannels: Map<any, GuildedChannel>;
+  selectedChannels: Set<GuildedChannel>;
 
   constructor({
     mode = MODES.DELETE,
@@ -35,7 +35,7 @@ export default class Settings {
     this.beforeDate = beforeDate;
     this.afterDate = afterDate;
     this.selectedTeams = new Map();
-    this.selectedChannels = new Map();
+    this.selectedChannels = new Set();
   }
 
   static Validate(settings: Settings) {

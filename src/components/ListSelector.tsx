@@ -5,7 +5,7 @@ import { ChangeEvent, FormEvent, ReactNode, useReducer } from "react";
 import { Button, Checkbox } from "../atoms";
 
 const style = {
-  textAlign: "left" as const
+  textAlign: "left" as const,
 };
 
 const selectAllStyles = {
@@ -24,10 +24,10 @@ const selectionBoxStyles = {
 };
 
 export enum ACTION_TYPE {
-  SINGLE="SINGLE",
-  ALL="ALL",
-  SINGLE_ENTRY="SINGLE_ENTRY"
-};
+  SINGLE = "SINGLE",
+  ALL = "ALL",
+  SINGLE_ENTRY = "SINGLE_ENTRY",
+}
 
 const checkedReducer = (prevState, action) => {
   const { checked, id, sectionName, selectableList, type } = action;
@@ -81,15 +81,14 @@ const ListSelector = ({
   isLoading,
   forFrom = "from",
   flavor,
-}:
-{
+}: {
   selectableList: SelectableList;
-  onSubmit: (selectedTeams: any) => Promise<void>
+  onSubmit: (selectedTeams: any) => Promise<void>;
   submitLabel?: string;
   listName?: string;
   isLoading: boolean;
   forFrom?: string;
-  flavor?: FlavorsKey
+  flavor?: FlavorsKey;
 }) => {
   const [isChecked, dispatchCheck] = useReducer(checkedReducer, selectableList.isChecked);
 
@@ -103,7 +102,15 @@ const ListSelector = ({
     return checkedTotal;
   }
 
-  const handleCheck = ({ e, sectionName, type  }: {e: ChangeEvent<HTMLInputElement>, sectionName: string, type: ACTION_TYPE}) => {
+  const handleCheck = ({
+    e,
+    sectionName,
+    type,
+  }: {
+    e: ChangeEvent<HTMLInputElement>;
+    sectionName: string;
+    type: ACTION_TYPE;
+  }) => {
     const { id, checked } = e.target;
     dispatchCheck({
       type,

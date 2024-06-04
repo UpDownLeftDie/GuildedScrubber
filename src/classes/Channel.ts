@@ -50,8 +50,22 @@ export default class Channel {
 
 export type GuildedChannel = GuildedTeamChannel | GuildedDMChannel;
 
-export interface GuildedTeamChannel {
+interface BasicGuildedChannel {
+  teamName?: string;
   id: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string | null;
+  archivedAt: string | null;
+  parentChannelId: string | null;
+  autoArchiveAt: string | null;
+  deletedAt: string | null;
+  archivedBy: string | null;
+  createdByWebhookId: string | null;
+  archivedByWebhookId: string | null;
+}
+
+export interface GuildedTeamChannel extends BasicGuildedChannel {
   type: ChannelType.TEAM;
   teamId: string;
   priority: number;
@@ -67,28 +81,19 @@ export interface GuildedTeamChannel {
   isRoleSynced: boolean;
   isPublic: boolean;
   groupId: string;
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string | null;
   contentType: ChannelContentType;
-  archivedAt: string | null;
-  parentChannelId: string | null;
-  autoArchiveAt: string | null;
-  deletedAt: string | null;
-  archivedBy: string | null;
-  createdByWebhookId: string | null;
-  archivedByWebhookId: string | null;
   userPermissions: null;
   tournamentRoles: null;
-  voiceParticipants: string[];
-  userStreams: string[];
 }
 
-export interface GuildedDMChannel {
-  id: string;
+export interface GuildedDMChannel extends BasicGuildedChannel {
   type: ChannelType.DM;
   name: string | null;
   description: null;
+  contentType: ChannelContentType.CHAT;
+  ownerId: string;
+  dmType: "Default" | "Group";
+  DMType: "Default" | "Group";
   users: {
     id: string;
     name: string;
@@ -105,19 +110,6 @@ export interface GuildedDMChannel {
     stonks: number;
     userPresenceStatus: number;
   }[];
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string | null;
-  contentType: ChannelContentType.CHAT;
-  archivedAt: string | null;
-  parentChannelId: string | null;
-  autoArchiveAt: string | null;
-  deletedAt: string | null;
-  archivedBy: string | null;
-  createdByWebhookId: string | null;
-  archivedByWebhookId: string | null;
-  dmType: "Default" | "Group";
-  DMType: "Default" | "Group";
   lastMessage: {
     id: string;
     content: any;
@@ -130,5 +122,4 @@ export interface GuildedDMChannel {
     isSilent: false;
     isPrivate: false;
   };
-  ownerId: string;
 }

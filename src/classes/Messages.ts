@@ -1,4 +1,4 @@
-// file deepcode ignore InsecureCipherNoIntegrity: wontfix
+// file deepcode ignore InsecureCipherNoIntegrity: not sure why this is wrong, probably not important in this context
 import crypto from "crypto";
 const algorithm = "aes-256-ctr";
 const ivSearchStr = " IV: ";

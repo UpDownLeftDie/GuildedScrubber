@@ -17,6 +17,7 @@ interface props {
 const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, nextPhase }: props) => {
   const sectionNameSingular = "Team";
   const sectionName = `${sectionNameSingular}s`;
+
   const onSubmit = async (selectedTeams) => {
     setIsLoading(true);
 
@@ -31,7 +32,7 @@ const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, nextPhase }: props)
 
     const teams = new Map();
     teamIds.forEach((teamId) => {
-      const team = user.teams.find(team => team.id === teamId);
+      const team = user.teams.find((team) => team.id === teamId);
       if (!team) return;
       const filteredChannels = Channel.FilterChannelsByMode(team.channels, user.settings.mode);
       team.channels = filteredChannels;

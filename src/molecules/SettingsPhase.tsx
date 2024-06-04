@@ -3,9 +3,11 @@ import { MODES } from "@/classes/Settings";
 import { ErrorListError } from "@/components/ErrorList";
 import { ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
 import { DateRangePicker } from "@nextui-org/date-picker";
+import { Input } from "@nextui-org/input";
+import { Select, SelectItem } from "@nextui-org/select";
 import { RangeValue } from "@react-types/shared";
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Button, Input } from "../atoms";
+import { Button } from "../atoms";
 import { Settings, User } from "../classes";
 import { ErrorList } from "../components";
 import { ContentContainer } from "../templates";
@@ -96,17 +98,23 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
         <ErrorList errors={errors} />
         <form style={styles} onSubmit={handleOnSubmit}>
           <label htmlFor="mode">Mode: </label>
-          <select id="mode" name="mode" onChange={handleModeChange}>
-            <option value={MODES.DELETE}>Delete Messages (unrecoverable!)</option>
-            <option value={MODES.ENCRYPT}>Encrypt Messages</option>
-            <option value={MODES.DECRYPT}>Decrypt Messages</option>
-          </select>
+
+          <Select
+            label="Mode"
+            placeholder="Select a mode"
+            defaultSelectedKeys={[MODES.DELETE]}
+            onChange={handleModeChange}
+          >
+            <SelectItem key={MODES.DELETE}>Delete Messages (unrecoverable!)</SelectItem>
+            <SelectItem key={MODES.ENCRYPT}>Encrypt Messages</SelectItem>
+            <SelectItem key={MODES.DECRYPT}>Decrypt Messages</SelectItem>
+          </Select>
           {showSecretKey ? (
             <Input
               label="Encryption SecretKey (SAVE THIS!)"
-              onChange={setSecretKey}
+              onValueChange={setSecretKey}
               value={secretKey}
-              placeholder="Example: xWOgB3XWfhZlua8E2El7ICFAc0q3jySf"
+              placeholder="Example: xWOgB3XWfhZl1a8E2El7ICFAc0q3jySf"
               minLength={SecretKeyLength}
               maxLength={SecretKeyLength}
               required={showSecretKey}

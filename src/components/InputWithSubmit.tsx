@@ -1,12 +1,28 @@
-import React from "react";
-import { Input, Button } from "../atoms";
+import { Button } from "@/atoms";
+import { FlavorsKey } from "@/atoms/Button";
+import { Input } from "@nextui-org/input";
+import type * as CSS from "csstype";
+import { MouseEventHandler } from "react";
 
 const style = {
   display: "flex",
-  flexDirection: "column",
+  flexDirection: "column" as const,
 };
 
-const InputWithSubmit = (props) => {
+interface props {
+  inputLabel: string;
+  inputValue: string;
+  inputOnChange: (value: string) => void;
+  inputPlaceholder: string;
+  inputDisabled?: boolean;
+  inputMaxLength: number;
+  submitDisabled?: boolean;
+  submitText: string;
+  submitOnClick: MouseEventHandler<HTMLButtonElement>;
+  submitFlavor?: FlavorsKey;
+  style?: CSS.Properties;
+}
+const InputWithSubmit = (props: props) => {
   const {
     inputLabel,
     inputValue,
@@ -22,7 +38,7 @@ const InputWithSubmit = (props) => {
       <Input
         label={inputLabel}
         value={inputValue}
-        onChange={inputOnChange}
+        onValueChange={inputOnChange}
         placeholder={inputPlaceholder}
         disabled={inputDisabled}
         maxLength={inputMaxLength}

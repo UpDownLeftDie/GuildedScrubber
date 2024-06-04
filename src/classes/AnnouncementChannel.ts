@@ -67,4 +67,9 @@ export default class AnnouncementChannel {
     } while (announcements?.length >= maxItems);
     return announcementCount;
   }
+
+  static async HandleReplies(announcements: any) {
+    // TODO: this function
+    return 0;
+  }
 }
