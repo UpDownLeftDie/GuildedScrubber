@@ -19,10 +19,6 @@ const styles = {
 };
 
 const description = [
-  "Warning: GuildedScrubber is provided as-is and doesn't guarantee messages will be recoverable or decipherable. Encrypt and decrypt are provided simply as option but my cause data loss and should not be relied upon for anything but another method of deletion.",
-  <br key="br1" />,
-  <br key="br2" />,
-  <br key="br3" />,
   <ul key="ul">
     <li>
       Delete:
@@ -46,6 +42,9 @@ const description = [
       </ul>
     </li>
   </ul>,
+  <br key="br1" />,
+
+  "Warning: GuildedScrubber is provided as-is and doesn't guarantee messages will be recoverable or decipherable. Encrypt and decrypt are provided simply as option but my cause data loss and should not be relied upon for anything but another method of deletion.",
 ];
 
 interface props {

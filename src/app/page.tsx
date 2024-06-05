@@ -2,6 +2,8 @@
 // import Image from "next/image";
 // import styles from "./page.module.css";
 import { Button } from "@/atoms";
+import { Button as NButton } from "@nextui-org/button";
+import { Snippet } from "@nextui-org/snippet";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { User } from "../classes";
@@ -52,8 +54,6 @@ enum PHASE {
 // const tagLine = "Don't delete your account till you've scrubbed it!";
 // const description = [
 //   'Delete all your message before you delete your account!',
-//   <br />,
-//   'Did you know that when you delete your account on Guilded your messages remain. If this bothers you, this tool is for you! Easily delete all your message with just a few clicks of a button.',
 // ];
 
 export default function Home() {
@@ -143,6 +143,36 @@ export default function Home() {
           ) : currentPhase === PHASE.RUNNING ? (
             <ProgressPhase user={user} />
           ) : null}
+        </div>
+        <div style={{ marginTop: "50px" }}>
+          <a
+            href={`mailto:support@guilded.gg?subject=GDPR Account Deletion Request&body=I would like to withdrawal consent, restriction processing, and request full erasure of all my personal data. My UserId is ${user.id}`}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+          >
+            <NButton color="danger" variant="bordered">
+              📧 Request account deletion
+            </NButton>
+          </a>
+          <br />
+          OR
+          <br />
+          Email:
+          <Snippet hideSymbol variant="bordered">
+            support@guilded.gg
+          </Snippet>
+          <br />
+          Message:
+          <Snippet
+            hideSymbol
+            variant="bordered"
+            classNames={{
+              pre: "whitespace-pre-line text-pretty",
+            }}
+          >
+            I would like to withdrawal consent, restriction processing, and request full erasure of
+            all my personal data under GDPR. {user?.id && `My UserID is ${user.id}`}
+          </Snippet>
         </div>
       </main>
       <a
