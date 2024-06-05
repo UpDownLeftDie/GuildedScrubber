@@ -9,6 +9,7 @@ const styles = {
 const headerStyles = {
   marginTop: 0,
   textAlign: "center" as const,
+  textTransform: "capitalize" as const,
 };
 
 const contentStyles = {

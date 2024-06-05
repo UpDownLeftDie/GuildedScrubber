@@ -1,7 +1,8 @@
 import { GuildedChannel } from "@/classes/Channel";
-import { SelectableList, Team, User } from "../classes";
-import { ListSelector } from "../components";
-import { ContentContainer } from "../templates";
+import { MultiListSelector } from "@/components";
+import { CheckItemsLists } from "@/components/MultiListSelector";
+import { ContentContainer } from "@/templates";
+import { Team, User } from "../classes";
 
 const description =
   "Select which channels you would like to delete/encrypt/decrypt your messages from.";
@@ -10,14 +11,13 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
   const sectionNameSingular = "Channel";
   const sectionName = `${sectionNameSingular}s`;
 
-  const onSubmit = async (teamsChannels) => {
+  const onSubmit = async (selectedTeamChannels: CheckItemsLists) => {
     const selectedChannels: Set<GuildedChannel> = new Set();
-    for (const [teamName, channelIds] of teamsChannels.entries()) {
+    for (const [teamName, channelNames] of selectedTeamChannels.entries()) {
       const team = Team.GetTeamByName(teamName, user.settings.selectedTeams);
       if (!team) return;
-      channelIds.delete("_all");
-      for (const channelId of channelIds) {
-        const channel = team.channels.find((channel) => channel.id === channelId);
+      for (const channelName of channelNames) {
+        const channel = team.channels.find((channel) => channel.name === channelName);
         if (!channel) continue;
         selectedChannels.add({
           ...channel,
@@ -30,16 +30,26 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
     nextPhase();
   };
 
-  const selectableList = new SelectableList(user.settings.selectedTeams, "channels");
+  function convertChannelsToCheckItemsList(teams: Team[]): CheckItemsLists {
+    const teamsWithChannels: CheckItemsLists = new Map();
+    teams.forEach((team) => {
+      const listItems = team.channels.map((channel) => channel.name);
+      teamsWithChannels.set(team.name, listItems);
+    });
+
+    return teamsWithChannels;
+  }
+
+  const checkItemsLists = convertChannelsToCheckItemsList(user.settings.selectedTeams);
+
   return (
     <ContentContainer headerText={sectionName} description={description}>
-      <ListSelector
-        selectableList={selectableList}
+      <MultiListSelector
+        checkItemsLists={checkItemsLists}
         submitLabel="Scrub"
-        forFrom=" "
         flavor="goldSolid"
         onSubmit={onSubmit}
-        listName={sectionNameSingular}
+        listsName={sectionNameSingular}
       />
     </ContentContainer>
   );

@@ -8,6 +8,9 @@ export enum MODES {
   DELETE = "delete",
 }
 
+export type SelectedTeams = Map<string, Team>;
+export type SelectedChannels = Set<GuildedChannel>;
+
 export default class Settings {
   static SecretKeyLength = 32;
 
@@ -21,8 +24,8 @@ export default class Settings {
   secretKey: string;
   beforeDate?: Date;
   afterDate?: Date;
-  selectedTeams: Map<any, Team>;
-  selectedChannels: Set<GuildedChannel>;
+  selectedTeams: Team[];
+  selectedChannels: SelectedChannels;
 
   constructor({
     mode = MODES.DELETE,
@@ -34,7 +37,7 @@ export default class Settings {
     this.secretKey = secretKey;
     this.beforeDate = beforeDate;
     this.afterDate = afterDate;
-    this.selectedTeams = new Map();
+    this.selectedTeams = [];
     this.selectedChannels = new Set();
   }
 

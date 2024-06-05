@@ -16,7 +16,7 @@ export default class User {
   lastOnline!: Date;
 
   constructor() {
-    this.hmac = Cookies.get("guilded-hmac") || "";
+    this.hmac = (Cookies.get("guilded-hmac") || "").trim();
     this.settings = new Settings();
     this.teams = [];
   }
@@ -97,7 +97,7 @@ export default class User {
   }
 
   #setHmac(hmac: string) {
-    Cookies.set("guilded-hmac", hmac);
+    Cookies.set("guilded-hmac", hmac.trim());
     this.hmac = hmac;
   }
 }

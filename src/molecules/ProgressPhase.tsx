@@ -1,3 +1,4 @@
+import { Progress } from "@nextui-org/progress";
 import { useEffect, useState } from "react";
 import { GuildedScrubber, User } from "../classes";
 import { ContentContainer } from "../templates";
@@ -5,7 +6,7 @@ import { ContentContainer } from "../templates";
 interface props {
   user: User;
 }
-const Progress = ({ user }: props) => {
+const ProgressPhase = ({ user }: props) => {
   const [channelsCount, setChannelsCount] = useState(1);
   const [action, setAction] = useState("");
   const [history, setHistory] = useState({});
@@ -19,7 +20,7 @@ const Progress = ({ user }: props) => {
     <ContentContainer headerText={"Scrubbing..."}>
       {channelsCount} of {totalChannels} Channels
       <br />
-      <progress value={channelsCount} max={totalChannels} />
+      <Progress value={(channelsCount / totalChannels) * 100} />
       <br />
       <div>Currently: {action}</div>
       <br />
@@ -44,4 +45,4 @@ const Progress = ({ user }: props) => {
   );
 };
 
-export default Progress;
+export default ProgressPhase;

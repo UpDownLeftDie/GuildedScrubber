@@ -88,7 +88,7 @@ export interface GuildedTeamChannel extends BasicGuildedChannel {
 
 export interface GuildedDMChannel extends BasicGuildedChannel {
   type: ChannelType.DM;
-  name: string | null;
+  name: string; // | null;
   description: null;
   contentType: ChannelContentType.CHAT;
   ownerId: string;

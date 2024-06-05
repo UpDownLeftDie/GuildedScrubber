@@ -1,12 +1,10 @@
+import MultiListSelector, { CheckItemsLists } from "@/components/MultiListSelector";
 import { Dispatch, SetStateAction } from "react";
-import { Channel, SelectableList, User } from "../classes";
-import { ListSelector } from "../components";
+import { Channel, Team, User } from "../classes";
 import { ContentContainer } from "../templates";
 
 const description =
   "Pick teams you want to load channels from. You will pick which channels to act on in the next step.";
-
-const DMs = "DMs";
 
 interface props {
   user: User;
@@ -15,46 +13,45 @@ interface props {
   nextPhase: () => void;
 }
 const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, nextPhase }: props) => {
-  const sectionNameSingular = "Team";
+  const sectionNameSingular = "team";
   const sectionName = `${sectionNameSingular}s`;
 
-  const onSubmit = async (selectedTeams) => {
+  const onSubmit = async (selectedItemsList: CheckItemsLists) => {
+    const teamNames = selectedItemsList.get("Teams");
+    if (!teamNames) return;
     setIsLoading(true);
 
-    let teamIds: Set<string> = new Set();
-
-    if (selectedTeams.get(DMs).size) {
-      await user.LoadDMs();
-      teamIds.add("DMs");
-    }
-
-    teamIds = new Set([...teamIds, ...selectedTeams.get(sectionName)]);
-
-    const teams = new Map();
-    teamIds.forEach((teamId) => {
-      const team = user.teams.find((team) => team.id === teamId);
+    const teams: Team[] = [];
+    teamNames.forEach((teamName) => {
+      const team = user.teams.find((team) => team.name === teamName);
       if (!team) return;
       const filteredChannels = Channel.FilterChannelsByMode(team.channels, user.settings.mode);
       team.channels = filteredChannels;
-      teams.set(team.id, team);
+      teams.push(team);
     });
 
-    setIsLoading(false);
+    if (teamNames.includes("DMs")) {
+      await user.LoadDMs();
+    }
+
     user.settings.selectedTeams = teams;
+    setIsLoading(false);
     nextPhase();
   };
 
-  const teamsCollection = new Map([
-    [0, { name: DMs }],
-    [1, { name: sectionName, teams: user.teams }],
-  ]);
-  const selectableList = new SelectableList(teamsCollection, "teams");
+  function convertTeamsToCheckItemsList(teams: Team[]): CheckItemsLists {
+    const listItems = teams.map((team) => team.name);
+    return new Map([["Teams", listItems]]);
+  }
+
+  const checkItemsLists = convertTeamsToCheckItemsList(user.teams);
+
   return (
     <ContentContainer headerText={sectionName} description={description}>
-      <ListSelector
+      <MultiListSelector
         submitLabel="Load Channels"
-        selectableList={selectableList}
-        listName={sectionNameSingular}
+        listsName="Teams"
+        checkItemsLists={checkItemsLists}
         onSubmit={onSubmit}
         isLoading={isLoading}
       />

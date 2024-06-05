@@ -1,202 +1,80 @@
-import { FlavorsKey } from "@/atoms/Button";
-import { SelectableList } from "@/classes";
-import { Section } from "@/classes/SelectableList";
-import { ChangeEvent, FormEvent, ReactNode, useReducer } from "react";
-import { Button, Checkbox } from "../atoms";
+import { Checkbox, CheckboxGroup } from "@nextui-org/checkbox";
+import { useRef } from "react";
+import { CheckListItems, CheckListName } from "./MultiListSelector";
 
-const style = {
-  textAlign: "left" as const,
-};
-
-const selectAllStyles = {
-  fontWeight: "bold",
-  marginBottom: 5,
-};
-
-const selectionListStyles = {
-  display: "flex",
-  flexDirection: "column" as const,
-  marginBottom: 20,
-};
-
-const selectionBoxStyles = {
-  marginLeft: 15,
-};
-
-export enum ACTION_TYPE {
-  SINGLE = "SINGLE",
-  ALL = "ALL",
-  SINGLE_ENTRY = "SINGLE_ENTRY",
+enum CheckAllState {
+  NONE,
+  SOME,
+  ALL,
+}
+interface props {
+  listItems: string[];
+  listName: string;
+  checkedItems: string[];
+  handleValueChange: (listName: CheckListName, checkedItems: CheckListItems) => void;
 }
 
-const checkedReducer = (prevState, action) => {
-  const { checked, id, sectionName, selectableList, type } = action;
-  const { sections } = selectableList;
-  const section = sections.find((section: Section) => section.name === sectionName);
-  const state = new Map(prevState.entries());
-  let sectionState = state.get(sectionName);
-  switch (type) {
-    case ACTION_TYPE.SINGLE:
-      if (checked) {
-        sectionState.add(id);
-      } else {
-        sectionState.delete(id);
-      }
-      state.set(sectionName, sectionState);
-      break;
+const ListSelector = (props: props) => {
+  const { listName, listItems, checkedItems } = props;
+  let checkAllState = useRef(CheckAllState.NONE);
 
-    case ACTION_TYPE.ALL:
-      let sectionSet = new Set();
-      if (checked) {
-        sectionSet = new Set(section.items?.keys());
-      }
-      state.set(section.name, sectionSet);
-      break;
+  const handleValueChange = (newCheckedItems: CheckListItems) => {
+    props.handleValueChange(listName, newCheckedItems);
+  };
 
-    case ACTION_TYPE.SINGLE_ENTRY:
-      sectionState.delete("_self");
-      if (checked) sectionState.add("_self");
-      state.set(sectionName, sectionState);
-      return state;
-
-    default:
-      return prevState;
-  }
-
-  sectionState = state.get(sectionName);
-  sectionState.delete("_all");
-  if (checked && sectionState.size === section.items?.size) {
-    sectionState.add("_all");
-    state.set(sectionName, sectionState);
-  }
-
-  return state;
-};
-
-const ListSelector = ({
-  selectableList,
-  onSubmit,
-  submitLabel = "Submit",
-  listName = "",
-  isLoading,
-  forFrom = "from",
-  flavor,
-}: {
-  selectableList: SelectableList;
-  onSubmit: (selectedTeams: any) => Promise<void>;
-  submitLabel?: string;
-  listName?: string;
-  isLoading: boolean;
-  forFrom?: string;
-  flavor?: FlavorsKey;
-}) => {
-  const [isChecked, dispatchCheck] = useReducer(checkedReducer, selectableList.isChecked);
-
-  const checkedCount = getCheckedCount();
-  function getCheckedCount() {
-    let checkedTotal = 0;
-    for (const section of isChecked.values()) {
-      checkedTotal += section.size;
-      if (section.has("_all")) checkedTotal--;
+  function _toggleCheckAll(isSelected: boolean) {
+    let newCheckedItems: string[] = [];
+    if (isSelected) {
+      checkAllState.current = CheckAllState.ALL;
+      newCheckedItems = listItems;
+    } else {
+      checkAllState.current = CheckAllState.NONE;
     }
-    return checkedTotal;
+    handleValueChange(newCheckedItems);
   }
 
-  const handleCheck = ({
-    e,
-    sectionName,
-    type,
-  }: {
-    e: ChangeEvent<HTMLInputElement>;
-    sectionName: string;
-    type: ACTION_TYPE;
-  }) => {
-    const { id, checked } = e.target;
-    dispatchCheck({
-      type,
-      id,
-      checked,
-      sectionName,
-      selectableList,
+  function _handleValueChange(newCheckedItems: string[]) {
+    let newState = CheckAllState.NONE;
+    if (newCheckedItems.length === listItems.length) {
+      newState = CheckAllState.ALL;
+    } else if (newCheckedItems.length > 0) {
+      newState = CheckAllState.SOME;
+    }
+    checkAllState.current = newState;
+    handleValueChange(newCheckedItems);
+  }
+
+  function getCheckBoxes() {
+    return listItems.map((item) => {
+      return (
+        <Checkbox key={item} value={item}>
+          {item}
+        </Checkbox>
+      );
     });
-  };
-
-  const handleOnSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSubmit(isChecked);
-  };
-
-  function convertCollectionArray() {
-    const list = selectableList.sections.reduce((list, section) => {
-      const { name: sectionName, items } = section;
-      const selectAllName = `selectAll-${sectionName.split(" ").join("")}`;
-      const isSingleEntry = items ? false : true;
-      const selectAllLabel = `${isSingleEntry ? "" : "Select All - "}${sectionName}`;
-      const selectAllChecked =
-        isChecked.get(sectionName)?.has?.("_all") || isChecked.get(sectionName)?.has?.("_self");
-
-      const selectAll = (
-        <div key={selectAllName} style={selectAllStyles}>
-          <Checkbox
-            id={selectAllName}
-            label={selectAllLabel}
-            onChange={(e) =>
-              handleCheck({
-                e,
-                sectionName,
-                type: isSingleEntry ? ACTION_TYPE.SINGLE_ENTRY : ACTION_TYPE.ALL,
-              })
-            }
-            checked={selectAllChecked}
-          />
-        </div>
-      );
-
-      const sectionItems: ReactNode[] = [];
-      items?.forEach((item) => {
-        const { name: itemName, id } = item;
-        sectionItems.push(
-          <span key={id} style={selectionBoxStyles}>
-            <Checkbox
-              id={id}
-              label={itemName}
-              onChange={(e) =>
-                handleCheck({
-                  e,
-                  sectionName,
-                  type: ACTION_TYPE.SINGLE,
-                })
-              }
-              checked={isChecked.get(sectionName).has(id)}
-            />
-          </span>,
-        );
-      });
-      const selectionList = (
-        <div key={sectionName} style={selectionListStyles}>
-          {sectionItems}
-        </div>
-      );
-
-      return [...list, selectAll, selectionList];
-    }, [] as Section[]);
-
-    return list;
   }
 
-  let list = convertCollectionArray();
+  console.log({ checkedItems });
+
+  const Checkboxes = getCheckBoxes();
   return (
-    <div style={style}>
-      <form style={style} onSubmit={handleOnSubmit}>
-        {list}
-        <Button
-          disabled={isLoading || checkedCount < 1}
-          type="submit"
-          text={`${submitLabel} ${forFrom} ${checkedCount} ${checkedCount > 1 ? `${listName}s` : listName}`}
-          flavor={flavor}
-        />
-      </form>
-    </div>
+    <>
+      <Checkbox
+        onValueChange={_toggleCheckAll}
+        value={"all"}
+        checked={checkAllState.current === CheckAllState.ALL}
+        isIndeterminate={checkAllState.current === CheckAllState.SOME}
+      >
+        Check All - {listName}
+      </Checkbox>
+      <CheckboxGroup
+        style={{ paddingLeft: "25px" }}
+        value={checkedItems}
+        onValueChange={_handleValueChange}
+      >
+        {Checkboxes}
+      </CheckboxGroup>
+    </>
   );
 };
 
