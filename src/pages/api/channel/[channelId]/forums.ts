@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
     const channelId = req.query.channelId as string;
-    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const hmac = Hmac.Sanitize(req.cookies["guilded-hmac"]);
     const maxItems = Number(req.headers["max-items"] as string);
     const page = Number(req.headers.page as string);
 

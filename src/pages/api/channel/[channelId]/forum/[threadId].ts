@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const channelId = req.query.channelId as string;
     const threadId = req.query.threadId as string;
 
-    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const hmac = Hmac.Sanitize(req.cookies["guilded-hmac"]);
     const maxItems = Number(req.headers["max-items"] as string);
     res.status(501);
     // const replies = await ChannelService.GetReplies({

@@ -8,16 +8,14 @@ export default async function FetchApi({
 }: {
   route: string;
   method?: string;
-  headers?: any;
+  headers?: HeadersInit;
   data?: any;
 }) {
   const hmac = Cookies.get("guilded-hmac");
+  if (!hmac) return;
   const res = await fetch(`/api/${route}`, {
     method,
-    headers: {
-      ...headers,
-      hmac,
-    },
+    headers,
     ...(data ? { body: JSON.stringify(data) } : {}),
   });
 

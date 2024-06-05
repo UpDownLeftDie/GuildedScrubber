@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
-    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const hmac = Hmac.Sanitize(req.cookies["guilded-hmac"]);
     const userId = req.query.userId as string;
     // Fetch DMs
     const dms = await UserService.GetDMChannels(hmac, userId);

@@ -3,7 +3,7 @@ import { MessageService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const hmac = Hmac.Sanitize(req.headers.hmac);
+  const hmac = Hmac.Sanitize(req.cookies["guilded-hmac"]);
   if (req.method === `PUT`) {
     const channelId = req.query.channelId as string;
     const messageId = req.query.messageId as string;

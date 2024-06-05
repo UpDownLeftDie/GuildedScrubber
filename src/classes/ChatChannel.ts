@@ -47,11 +47,11 @@ export default class ChatChannel {
       setAction("Loading messages");
       const messages = (await FetchApi({
         route: `channel/${channelId}/messages`,
-        headers: {
-          ...(beforeDate && { "before-date": beforeDate }),
-          ...(afterDate && { "after-date": afterDate }),
-          ...(messageLimit && { "message-limit": messageLimit }),
-        },
+        headers: new Headers([
+          ["before-date", beforeDate.toISOString()],
+          ["after-date", afterDate.toISOString()],
+          ["message-limit", messageLimit.toString()],
+        ]),
       })) as GuildedMessage[];
 
       if (!messages?.length) break;

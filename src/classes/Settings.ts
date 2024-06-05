@@ -22,21 +22,14 @@ export default class Settings {
 
   mode: MODES;
   secretKey: string;
-  beforeDate?: Date;
-  afterDate?: Date;
+  beforeDate!: Date;
+  afterDate!: Date;
   selectedTeams: Team[];
   selectedChannels: SelectedChannels;
 
-  constructor({
-    mode = MODES.DELETE,
-    secretKey = "",
-    beforeDate = undefined,
-    afterDate = undefined,
-  } = {}) {
+  constructor({ mode = MODES.DELETE, secretKey = "" } = {}) {
     this.mode = mode;
     this.secretKey = secretKey;
-    this.beforeDate = beforeDate;
-    this.afterDate = afterDate;
     this.selectedTeams = [];
     this.selectedChannels = new Set();
   }

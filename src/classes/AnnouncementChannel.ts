@@ -28,11 +28,11 @@ export default class AnnouncementChannel {
       setAction("Loading announcements and replies");
       const announcements = await FetchApi({
         route: `channel/${channelId}/announcements`,
-        headers: {
-          ...(beforeDate && { "before-date": beforeDate }),
-          ...(afterDate && { "after-date": afterDate }),
-          ...(maxItems && { "max-items": maxItems }),
-        },
+        headers: new Headers([
+          ["before-date", beforeDate.toISOString()],
+          ["after-date", afterDate.toISOString()],
+          ["max-items", maxItems.toString()],
+        ]),
       });
       if (!announcements?.length) break;
       beforeDate = announcements[announcements.length - 1].createdAt;
