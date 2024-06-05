@@ -1,6 +1,7 @@
+import type * as CSS from 'csstype';
 import { MouseEventHandler } from "react";
 
-const style = {
+const style: CSS.Properties = {
   color: "#ececee",
   padding: "7px 16px",
   borderRadius: "4px",
@@ -10,7 +11,7 @@ const style = {
   fontWeight: "bold",
 };
 
-type FlavorsKey = keyof typeof flavors;
+export type FlavorsKey = keyof typeof flavors;
 const flavors = {
   gold: {
     color: "#f5c400",
@@ -42,11 +43,13 @@ interface ButtonProps {
   type?: "button" | "submit" | "reset";
   onClick?: MouseEventHandler<HTMLButtonElement>;
   flavor?: FlavorsKey;
+  customStyle?: CSS.Properties;
 }
-const Button = ({ disabled = false, text, type = "button", onClick, flavor }: ButtonProps) => {
+const Button = ({ disabled = false, text, type = "button", onClick, flavor, customStyle = {} }: ButtonProps) => {
   const styles = {
     ...style,
     ...(flavor && flavors[flavor]),
+    ...customStyle,
     ...(disabled && flavors.disabled),
   };
   return (

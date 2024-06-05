@@ -1,8 +1,11 @@
-import React, { useReducer } from "react";
+import { FlavorsKey } from "@/atoms/Button";
+import { SelectableList } from "@/classes";
+import { Section } from "@/classes/SelectableList";
+import { ChangeEvent, FormEvent, ReactNode, useReducer } from "react";
 import { Button, Checkbox } from "../atoms";
 
 const style = {
-  textAlign: "left",
+  textAlign: "left" as const
 };
 
 const selectAllStyles = {
@@ -12,7 +15,7 @@ const selectAllStyles = {
 
 const selectionListStyles = {
   display: "flex",
-  flexDirection: "column",
+  flexDirection: "column" as const,
   marginBottom: 20,
 };
 
@@ -20,16 +23,16 @@ const selectionBoxStyles = {
   marginLeft: 15,
 };
 
-const ACTION_TYPE = {
-  SINGLE: "SINGLE",
-  ALL: "ALL",
-  SINGLE_ENTRY: "SINGLE_ENTRY",
+export enum ACTION_TYPE {
+  SINGLE="SINGLE",
+  ALL="ALL",
+  SINGLE_ENTRY="SINGLE_ENTRY"
 };
 
 const checkedReducer = (prevState, action) => {
   const { checked, id, sectionName, selectableList, type } = action;
   const { sections } = selectableList;
-  const section = sections.find((section) => section.name === sectionName);
+  const section = sections.find((section: Section) => section.name === sectionName);
   const state = new Map(prevState.entries());
   let sectionState = state.get(sectionName);
   switch (type) {
@@ -72,12 +75,21 @@ const checkedReducer = (prevState, action) => {
 
 const ListSelector = ({
   selectableList,
-  onSubmit = () => {},
+  onSubmit,
   submitLabel = "Submit",
   listName = "",
   isLoading,
   forFrom = "from",
   flavor,
+}:
+{
+  selectableList: SelectableList;
+  onSubmit: (selectedTeams: any) => Promise<void>
+  submitLabel?: string;
+  listName?: string;
+  isLoading: boolean;
+  forFrom?: string;
+  flavor?: FlavorsKey
 }) => {
   const [isChecked, dispatchCheck] = useReducer(checkedReducer, selectableList.isChecked);
 
@@ -91,7 +103,7 @@ const ListSelector = ({
     return checkedTotal;
   }
 
-  const handleCheck = ({ e, sectionName, type }) => {
+  const handleCheck = ({ e, sectionName, type  }: {e: ChangeEvent<HTMLInputElement>, sectionName: string, type: ACTION_TYPE}) => {
     const { id, checked } = e.target;
     dispatchCheck({
       type,
@@ -102,7 +114,7 @@ const ListSelector = ({
     });
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit(isChecked);
   };
@@ -133,7 +145,7 @@ const ListSelector = ({
         </div>
       );
 
-      const sectionItems = [];
+      const sectionItems: ReactNode[] = [];
       items?.forEach((item) => {
         const { name: itemName, id } = item;
         sectionItems.push(
@@ -160,7 +172,7 @@ const ListSelector = ({
       );
 
       return [...list, selectAll, selectionList];
-    }, []);
+    }, [] as Section[]);
 
     return list;
   }

@@ -1,9 +1,14 @@
+import Hmac from "@/classes/Hmac";
+import { ForumService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ForumService } from "../../../../service";
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
-    const { channelId } = req.query;
-    const { hmac, "max-items": maxItems, page: page } = req.headers;
+    const channelId = req.query.channelId as string;
+    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const maxItems = Number(req.headers["max-items"] as string);
+    const page = Number(req.headers.page as string);
+
     const messages = await ForumService.GetThreads({
       hmac,
       channelId,

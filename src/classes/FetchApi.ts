@@ -1,5 +1,4 @@
 import Cookies from "js-cookie";
-import fetch from "node-fetch";
 
 export default async function FetchApi({
   route,

@@ -1,23 +1,30 @@
+import { Dispatch, SetStateAction } from "react";
 import Announcements from "./AnnouncementChannel";
+import Channel, { ChannelContentType } from "./Channel";
 import ChatChannel from "./ChatChannel";
 import ForumChannel from "./ForumChannel";
-import Settings from "./Settings";
-import Channel from "./Channel";
+import { MODES } from "./Settings";
+import User from "./User";
 
-const { CHANNEL_TYPES, CHAT_CHANNELS, TOPIC_CHANNELS, DELETE_CHANNELS } = Channel;
+const { CHAT_CHANNELS, TOPIC_CHANNELS, DELETE_CHANNELS } = Channel;
 
 export default class GuildedScrubber {
-  static async ScrubChannels(user, setChannelsCount, setAction, setHistory) {
+  static async ScrubChannels(
+    user: User,
+    setChannelsCount: Dispatch<SetStateAction<number>>,
+    setAction: Dispatch<SetStateAction<string>>,
+    setHistory: Dispatch<SetStateAction<{}>>,
+  ) {
     const { settings } = user;
     const { mode, selectedChannels: channels } = settings;
 
     let totalItemCount = 0;
     for (const [i, channel] of Array.from(channels).entries()) {
       setChannelsCount(i + 1);
-      totalItemCount += await this.ScrubChannel({
+      totalItemCount += await GuildedScrubber.ScrubChannel({
         user,
         channelId: channel.id,
-        channelType: channel.contentType,
+        channelContentType: channel.contentType,
         mode,
         setAction,
       });
@@ -25,12 +32,24 @@ export default class GuildedScrubber {
     setAction(`Done! Scrubbed ${totalItemCount} messages in ${channels.size} channels.`);
   }
 
-  static async ScrubChannel({ user, channelId, channelType, mode, setAction }) {
+  static async ScrubChannel({
+    user,
+    channelId,
+    channelContentType,
+    mode,
+    setAction,
+  }: {
+    user: User;
+    channelId: string;
+    channelContentType: ChannelContentType;
+    mode: MODES;
+    setAction: Dispatch<SetStateAction<string>>;
+  }) {
     let itemCount = 0;
-    const deleteMode = mode === Settings.MODES.DELETE;
-    const decryptMode = mode === Settings.MODES.DECRYPT;
+    const deleteMode = mode === MODES.DELETE;
+    const decryptMode = mode === MODES.DECRYPT;
 
-    if (CHAT_CHANNELS.includes(channelType)) {
+    if (CHAT_CHANNELS.includes(channelContentType)) {
       const messageLimit = 100;
       itemCount += await ChatChannel.Process({
         user,
@@ -40,7 +59,7 @@ export default class GuildedScrubber {
         decryptMode,
         messageLimit,
       });
-    } else if (channelType === CHANNEL_TYPES.ANNOUNCEMENT) {
+    } else if (channelContentType === ChannelContentType.ANNOUNCEMENT) {
       const maxItems = 1000;
       itemCount += await Announcements.Process({
         user,
@@ -50,7 +69,7 @@ export default class GuildedScrubber {
         decryptMode,
         maxItems,
       });
-    } else if (channelType === CHANNEL_TYPES.FORUM) {
+    } else if (channelContentType === ChannelContentType.FORUM) {
       const maxItems = 1000;
       itemCount += await ForumChannel.Process({
         user,
@@ -60,7 +79,7 @@ export default class GuildedScrubber {
         decryptMode,
         maxItems,
       });
-    } else if (DELETE_CHANNELS.includes(channelType)) {
+    } else if (DELETE_CHANNELS.includes(channelContentType)) {
     }
     return itemCount;
   }

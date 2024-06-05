@@ -1,8 +1,24 @@
+import { Dispatch, SetStateAction } from "react";
+import { User } from ".";
 import FetchApi from "./FetchApi";
 import Messages from "./Messages";
 
 export default class AnnouncementChannel {
-  async Process({ user, channelId, setAction, deleteMode, decryptMode, maxItems }) {
+  static async Process({
+    user,
+    channelId,
+    setAction,
+    deleteMode,
+    decryptMode,
+    maxItems,
+  }: {
+    user: User;
+    channelId: string;
+    setAction: Dispatch<SetStateAction<string>>;
+    deleteMode: boolean;
+    decryptMode: boolean;
+    maxItems: number;
+  }) {
     const { settings } = user;
     const { secretKey } = settings;
     let { beforeDate, afterDate } = settings;

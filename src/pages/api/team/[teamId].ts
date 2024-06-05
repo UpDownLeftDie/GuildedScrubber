@@ -1,8 +1,9 @@
+import Hmac from "@/classes/Hmac";
+import { TeamService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
-import { TeamService } from "../../../service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const hmac = req.headers.hmac as string;
+  const hmac = Hmac.Sanitize(req.headers.hmac);
   if (req.method === `GET`) {
     const teamId = req.query?.teamId as string;
     const channels = await TeamService.GetChannels(hmac, teamId);

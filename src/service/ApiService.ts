@@ -1,5 +1,5 @@
+import fetch from "make-fetch-happen";
 import { v4 as uuid } from "uuid";
-import fetch from "node-fetch";
 
 const API_URL = "https://www.guilded.gg/api";
 
@@ -15,79 +15,33 @@ export default class ApiService {
     method?: string;
     body?: string;
   }) {
-    await delay(getRandomInt(200, 600));
-    const res = await ApiService.RetryFetch({
-      url: `${API_URL}${url}`,
-      fetchOptions: {
-        method,
-        headers: {
-          authority: "www.guilded.gg",
-          accept: "application/json, text/javascript, */*; q=0.01",
-          "cache-control": "no-cache",
-          "content-type": "application/json",
-          cookie: `hmac_signed_session=${hmac}; authenticated=true;`,
-          "guilded-client-id": uuid(),
-          pragma: "no-cache",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "none",
-        },
-        body,
+    const fetchOptions = {
+      method,
+      body,
+      headers: {
+        authority: "www.guilded.gg",
+        accept: "*/*",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        cookie: `hmac_signed_session=${hmac}; authenticated=true;`,
+        "guilded-client-id": uuid(),
+        "guilded-viewer-platform": "desktop",
+        pragma: "no-cache",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "none",
       },
-    }).catch((err) => console.error(err));
-    return res?.json?.();
+      retry: {
+        retries: 10,
+        randomize: true,
+      },
+    };
+    const apiUrl = `${API_URL}${url}`;
+
+    return await fetch(apiUrl, fetchOptions)
+      .then((res) => res.json())
+      .then((json) => {
+        return json;
+      })
+      .catch((err) => console.error(err));
   }
-
-  static async RetryFetch({
-    url,
-    fetchOptions = {},
-    retries = 100,
-    retryDelay = 5000,
-    timeout,
-  }: {
-    url: string;
-    fetchOptions?: any;
-    retries?: number;
-    retryDelay?: number;
-    timeout?: number;
-  }): Promise<fetch.Response> {
-    return new Promise((resolve, reject) => {
-      // check for timeout
-      if (timeout) setTimeout(() => reject("error: timeout"), timeout);
-
-      const wrapper = (n: number) => {
-        fetch(url, fetchOptions)
-          .then(async (res) => {
-            if (res.status === 429) {
-              if (n > 0) {
-                await delay(getRandomInt(retryDelay - 1500, retryDelay + 1000));
-                wrapper(--n);
-              } else {
-                reject(new Error(res.statusText));
-              }
-            } else {
-              resolve(res);
-            }
-          })
-          .catch(async (err) => {
-            if (n > 0) {
-              await delay(getRandomInt(retryDelay - 1500, retryDelay + 1000));
-              wrapper(--n);
-            } else {
-              reject(err);
-            }
-          });
-      };
-
-      return wrapper(retries);
-    });
-  }
-}
-
-function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-async function delay(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }

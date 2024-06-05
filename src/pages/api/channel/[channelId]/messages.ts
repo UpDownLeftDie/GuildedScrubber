@@ -1,14 +1,16 @@
+import Hmac from "@/classes/Hmac";
+import { ChannelService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ChannelService } from "../../../../service";
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
-    const { channelId } = req.query;
-    const {
-      hmac,
-      "message-limit": messageLimit,
-      "before-date": beforeDate,
-      "after-date": afterDate,
-    } = req.headers;
+    const channelId = req.query.channelId as string;
+
+    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const messageLimit = Number(req.headers["message-limit"] as string);
+    const beforeDate = req.headers["before-date"] as string;
+    const afterDate = req.headers["after-date"] as string;
+
     const messages = await ChannelService.GetMessages({
       hmac,
       channelId,

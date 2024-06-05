@@ -1,12 +1,13 @@
 // https://www.guilded.gg/api/content/announcement/V6XpoZo6/replies
 
+import Hmac from "@/classes/Hmac";
+import { ReplyService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
-import ReplyService from "../../../../../service/ReplyService";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
-    const { announcementId } = req.query;
-    const { hmac } = req.headers;
+    const announcementId = req.query.announcementId as string;
+    const hmac = Hmac.Sanitize(req.headers.hmac);
     const replies = await ReplyService.GetAnnouncementsReplies({
       hmac,
       announcementId,

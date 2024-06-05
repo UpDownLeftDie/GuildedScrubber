@@ -1,9 +1,15 @@
+// file deepcode ignore InsecureCipherNoIntegrity: wontfix
 import crypto from "crypto";
 const algorithm = "aes-256-ctr";
 const ivSearchStr = " IV: ";
 
 export default class Messages {
-  static FilterByUserAndMode(userId, messages, decryptMode, deleteMode) {
+  static FilterByUserAndMode(
+    userId: string,
+    messages: GuildedMessage[],
+    decryptMode: boolean,
+    deleteMode: boolean,
+  ) {
     return messages.filter((message) => {
       if (message.createdBy !== userId) return false; // can't act on other user's messages
       if (deleteMode) return true; // deleting messages so don't care if they're encrypted or not
@@ -17,29 +23,28 @@ export default class Messages {
     });
   }
 
-  static GetTextFromContent(items) {
-    const texts = {};
+  static GetTextFromContent(items: GuildedMessage[]) {
+    const texts: ExtractedMessageText = {};
     for (const item of items) {
       texts[item.id] = {
-        text: findTextInNodes(item.content.document.nodes, ""),
+        text: findTextInNodes(item.content.document.nodes),
         channelId: item.channelId,
       };
     }
     return texts;
   }
 
-  static EncryptTexts(texts, secretKey, deleteMode = false) {
-    let encryptedTexts = {};
+  static EncryptTexts(texts: ExtractedMessageText, secretKey: string, deleteMode = false) {
+    let encryptedTexts: GuildedMessageContentsById = {};
     Object.entries(texts).forEach(([messageId, messageInfo]) => {
       const text = deleteMode ? "[deleted for privacy]" : encrypt(messageInfo.text, secretKey);
-
       encryptedTexts[messageId] = buildMessageContent(text);
     });
     return encryptedTexts;
   }
 
-  static DecryptTexts(texts, secretKey) {
-    let decryptedMessageContents = {};
+  static DecryptTexts(texts: ExtractedMessageText, secretKey: string) {
+    let decryptedMessageContents: GuildedMessageContentsById = {};
     Object.entries(texts).forEach(([messageId, messageInfo]) => {
       const messageText = messageInfo.text;
       const ivIndex = messageText.indexOf(ivSearchStr);
@@ -51,7 +56,11 @@ export default class Messages {
   }
 }
 
-function findTextInNodes(nodes, string, depth = 0) {
+export interface GuildedMessageContentsById {
+  [key: string]: GuildedMessage;
+}
+
+function findTextInNodes(nodes: GuildedMessageNode[], string = "", depth = 0) {
   nodes.forEach((node) => {
     if (node.object === "text") {
       const tempStr = node.leaves
@@ -69,7 +78,7 @@ function findTextInNodes(nodes, string, depth = 0) {
   return string.trim();
 }
 
-function encrypt(text, secretKey) {
+function encrypt(text: string, secretKey: string) {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
@@ -77,7 +86,7 @@ function encrypt(text, secretKey) {
   return `${encrypted.toString("hex")}${ivSearchStr}${iv.toString("hex")}`;
 }
 
-function decrypt(text, secretKey, iv) {
+function decrypt(text: string, secretKey: string, iv: Buffer) {
   const decipher = crypto.createDecipheriv(algorithm, secretKey, iv);
 
   const decrypted = Buffer.concat([decipher.update(Buffer.from(text, "hex")), decipher.final()]);
@@ -85,7 +94,7 @@ function decrypt(text, secretKey, iv) {
   return decrypted.toString();
 }
 
-function buildMessageContent(contentText) {
+function buildMessageContent(contentText: string): GuildedMessage {
   return {
     content: {
       object: "value",
@@ -113,5 +122,69 @@ function buildMessageContent(contentText) {
         ],
       },
     },
+  } as GuildedMessage;
+}
+
+interface ExtractedMessageText {
+  [key: string]: {
+    text: string;
+    channelId: string;
   };
+}
+
+type GuildedMessageNode =
+  | {
+      object: "block" | "inline";
+      type: "paragraph" | "reaction";
+      data: {};
+      nodes: GuildedMessageNode[];
+    }
+  | {
+      object: "text";
+      leaves: {
+        text: string;
+        marks: [];
+        object: "leaf";
+      }[];
+    };
+
+export interface GuildedMessage {
+  id: string;
+  content: {
+    object: string;
+    document: {
+      data: {};
+      nodes: GuildedMessageNode[];
+      object: string;
+    };
+  };
+  type: string;
+  reactions: {
+    customReactionId: number;
+    createdAt: string;
+    users: {
+      id: string;
+    }[];
+    totalUsers: number;
+    customReaction: {
+      id: number;
+      name: string;
+      png: string | null;
+      webp: string | null;
+      apng: string | null;
+      teamId: string | null;
+    };
+  }[];
+  createdBy: string;
+  createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
+  channelId: string;
+  webhookId: string | null;
+  isSilent: boolean;
+  isPrivate: boolean;
+  repliesToIds: string[];
+  isPinned: boolean;
+  pinnedBy: string | null;
+  repliesTo: string;
 }

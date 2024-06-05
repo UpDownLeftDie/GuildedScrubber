@@ -1,7 +1,7 @@
-import React, { Dispatch, SetStateAction } from "react";
-import { ContentContainer } from "../templates";
-import { ListSelector } from "../components";
+import { Dispatch, SetStateAction } from "react";
 import { Channel, SelectableList, User } from "../classes";
+import { ListSelector } from "../components";
+import { ContentContainer } from "../templates";
 
 const description =
   "Pick teams you want to load channels from. You will pick which channels to act on in the next step.";
@@ -12,10 +12,9 @@ interface props {
   user: User;
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
-  mode?: any;
   nextPhase: () => void;
 }
-const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, mode, nextPhase }: props) => {
+const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, nextPhase }: props) => {
   const sectionNameSingular = "Team";
   const sectionName = `${sectionNameSingular}s`;
   const onSubmit = async (selectedTeams) => {
@@ -32,8 +31,9 @@ const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, mode, nextPhase }: 
 
     const teams = new Map();
     teamIds.forEach((teamId) => {
-      const team = user.teams.get(teamId);
-      const filteredChannels = Channel.FilterChannelsByMode(team.channels, mode);
+      const team = user.teams.find(team => team.id === teamId);
+      if (!team) return;
+      const filteredChannels = Channel.FilterChannelsByMode(team.channels, user.settings.mode);
       team.channels = filteredChannels;
       teams.set(team.id, team);
     });

@@ -1,10 +1,11 @@
+import Hmac from "@/classes/Hmac";
+import { UserService } from "@/service";
 import { NextApiRequest, NextApiResponse } from "next";
-import UserService from "../../../../service/UserService";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
-    const { hmac } = req.headers;
-    const { userId } = req.query;
+    const hmac = Hmac.Sanitize(req.headers.hmac);
+    const userId = req.query.userId as string;
     // Fetch DMs
     const dms = await UserService.GetDMChannels(hmac, userId);
     res.json(dms);

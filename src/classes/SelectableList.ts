@@ -1,13 +1,35 @@
+import Team from "./Team";
+
+export type Section = {
+  name: string;
+  items: {
+    name: string;
+    teams?: Team[];
+  }[];
+};
+
+type Collection = Map<
+  number,
+  {
+    [index: string]: string | Team[] | undefined;
+    name: string;
+    teams?: Team[];
+  }
+>;
+
 export default class SelectableList {
-  constructor(collections, itemsPropName) {
+  sections: Section[];
+  isChecked: Map<string, Set<any>>;
+
+  constructor(collection: Collection, itemsPropName: string) {
     this.sections = [];
     this.isChecked = new Map();
 
-    for (const collection of collections.values()) {
-      this.isChecked.set(collection.name, new Set());
+    for (const element of collection.values()) {
+      this.isChecked.set(element.name, new Set());
       this.sections.push({
-        name: collection.name,
-        items: collection[itemsPropName],
+        name: element.name,
+        items: element[itemsPropName],
       });
     }
   }

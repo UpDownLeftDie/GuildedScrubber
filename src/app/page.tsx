@@ -1,6 +1,8 @@
 "use client";
 // import Image from "next/image";
 // import styles from "./page.module.css";
+import { Button } from "@/atoms";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { User } from "../classes";
 import {
@@ -31,19 +33,21 @@ const sloganStyles = {
   fontSize: "1.3rem",
   fontStyle: "italic",
   display: "inline-block",
+  fontWeight: "bold",
 };
 
 const pageContentStyles = {
   textAlign: "left" as const,
 };
 
-const PHASE = {
-  LOAD_USER: 1,
-  SETTINGS: 2,
-  SELECT_TEAMS: 3,
-  SELECT_CHANNELS: 4,
-  RUNNING: 5,
-};
+enum PHASE {
+  HOMEPAGE,
+  LOAD_USER,
+  SETTINGS,
+  SELECT_TEAMS,
+  SELECT_CHANNELS,
+  RUNNING,
+}
 
 // const tagLine = "Don't delete your account till you've scrubbed it!";
 // const description = [
@@ -53,9 +57,9 @@ const PHASE = {
 // ];
 
 export default function Home() {
-  const user = new User();
+  const [user, setUser] = useState(new User());
   const [slogan, setSlogan] = useState("");
-  const [currentPhase, setPhase] = useState(PHASE.LOAD_USER);
+  const [currentPhase, setPhase] = useState(PHASE.HOMEPAGE);
   const nextPhase = () => {
     setPhase(currentPhase + 1);
   };
@@ -63,34 +67,70 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    import("./public/slogans.json").then((slogans) => {
-      const slogan = slogans[Math.floor(Math.random() * slogans.length)];
-      setSlogan(`— ${slogan} 🎉🎉🎉`);
-      setIsLoading(false); // important to cause rerender for button
-    });
+    import("./slogans.json")
+      .then((slogans) => {
+        const slogan = slogans[Math.floor(Math.random() * slogans.length)];
+        setSlogan(`— ${slogan} 🎉🎉🎉`);
+        setIsLoading(false); // important to cause rerender for button
+      })
+      .catch((error) => {
+        console.error("error loading slogans 🤷", error);
+      });
   }, []);
 
   return (
     <>
       <main style={pageStyles}>
-        <div style={headingStyles}>
-          <h1>
-            Guilded Scrubber
-            <br />
+        {currentPhase === PHASE.HOMEPAGE ? (
+          <div style={headingStyles}>
+            <Image
+              src="/logo.png"
+              width={400}
+              height={400}
+              alt="Guilded Scrubber"
+              priority={true}
+              style={{ display: "inline-block" }}
+            />
+            <h1>Guilded Scrubber</h1>
             <span style={sloganStyles}>{slogan}</span>
-          </h1>
-        </div>
+            <br />
+            <Button
+              text="Start"
+              customStyle={{ fontSize: "3em" }}
+              onClick={nextPhase}
+              flavor="goldSolid"
+            />
+            <br />
+            <br />
+            <br />
+            <h3>Delete or encrypt, some or all, of your messages on Guilded!</h3>
+            <div>
+              Looking to delete your account but don&apos;t want all your messages left behind?
+              <br />
+              <strong>Guilded Scrubber</strong> lets you select specific teams/server and date
+              ranges to remove messages.
+              <br />
+              Ensuring you remove all personal information that you might have left behind and{" "}
+              <u>automatically editing them before deleting them to help maximize your privacy!</u>
+              <br />
+              <br />
+              This can also be a preventative measure if ROBLOX/Guilded ever decides that they want
+              to train AI models on chat messages.
+            </div>
+          </div>
+        ) : null}
         <div style={pageContentStyles}>
           {currentPhase === PHASE.LOAD_USER ? (
             <LoadUserPhase
               user={user}
               hmac={user.hmac}
               isLoading={isLoading}
+              setUser={setUser}
               setIsLoading={setIsLoading}
               nextPhase={nextPhase}
             />
           ) : currentPhase === PHASE.SETTINGS ? (
-            <SettingsPhase user={user} setIsLoading={setIsLoading} nextPhase={nextPhase} />
+            <SettingsPhase user={user} nextPhase={nextPhase} />
           ) : currentPhase === PHASE.SELECT_TEAMS ? (
             <TeamsSelectorPhase
               user={user}

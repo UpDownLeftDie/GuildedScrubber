@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GuildedScrubber, User } from "../classes";
 import { ContentContainer } from "../templates";
 
@@ -13,7 +13,7 @@ const Progress = ({ user }: props) => {
 
   useEffect(() => {
     GuildedScrubber.ScrubChannels(user, setChannelsCount, setAction, setHistory);
-  }, []);
+  }, [user]);
 
   return (
     <ContentContainer headerText={"Scrubbing..."}>

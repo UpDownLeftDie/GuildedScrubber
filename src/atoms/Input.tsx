@@ -7,6 +7,8 @@ interface InputProps {
   required?: boolean;
   onChange?: Function;
   onBlur?: Function;
+  min?: string | number;
+  max?: string | number;
   maxLength?: number;
   minLength?: number;
   disabled?: boolean;
@@ -19,6 +21,8 @@ const Input = ({
   required = false,
   onChange,
   onBlur,
+  min,
+  max,
   maxLength,
   minLength,
   disabled,
@@ -43,6 +47,8 @@ const Input = ({
         value={value}
         placeholder={placeholder}
         type={type}
+        min={min}
+        max={max}
         required={required}
         onChange={handleOnChange}
         onBlur={handleOnBlur}

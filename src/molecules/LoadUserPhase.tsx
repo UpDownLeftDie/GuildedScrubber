@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import User from "@/classes/User";
+import { Dispatch, SetStateAction, useState } from "react";
 import { InputWithSubmit } from "../components";
 import { ContentContainer } from "../templates";
-import User from "@/classes/User";
 
 const styles = {};
 
@@ -31,16 +31,16 @@ const description = [
   "This is needed to act on your behalf and make requests relevant to your account. This value is only saved in your local browser for convenience.",
   <br key="br3" />,
   <br key="br4" />,
-  "This site doesn't save any data. Clear your cookies on this site when done using it.",
+  "This site doesn't save any data. Clear your cookies on this site when done using it to clear your session token.",
 ];
 
 interface props {
   hmac: string;
   user: User;
-  setUser?: boolean;
+  setUser: Dispatch<SetStateAction<User>>;
   isLoading: boolean;
-  setIsLoading: any;
-  nextPhase: any;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  nextPhase:  () => void;
 }
 
 const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase }: props) => {
@@ -48,8 +48,9 @@ const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase
 
   const loadUser = async () => {
     setIsLoading(true);
-    await user.LoadUser(hmacInput);
+    setUser(await user.LoadUser(hmacInput));
     setIsLoading(false);
+    console.log(user.settings)
 
     nextPhase();
   };

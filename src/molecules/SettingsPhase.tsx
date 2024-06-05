@@ -1,9 +1,14 @@
-import React, { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from "react";
-import { ContentContainer } from "../templates";
-import { Input, Button } from "../atoms";
-import { Settings, DateFormatter, User } from "../classes";
-import { ErrorList } from "../components";
+"use client";
 import { MODES } from "@/classes/Settings";
+import { ErrorListError } from "@/components/ErrorList";
+import { ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
+import { DateRangePicker } from "@nextui-org/date-picker";
+import { RangeValue } from "@react-types/shared";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { Button, Input } from "../atoms";
+import { Settings, User } from "../classes";
+import { ErrorList } from "../components";
+import { ContentContainer } from "../templates";
 const { SecretKeyLength } = Settings;
 
 const styles = {
@@ -12,7 +17,7 @@ const styles = {
 };
 
 const description = [
-  "Warning: GuildedScrubber is provided as-is and doesn't guarantee messages will be recoverable or decryptable. Encrypt and decrypt are provided simply as option but my cause data loss and should not be relied upon for anything but another method of deletion.",
+  "Warning: GuildedScrubber is provided as-is and doesn't guarantee messages will be recoverable or decipherable. Encrypt and decrypt are provided simply as option but my cause data loss and should not be relied upon for anything but another method of deletion.",
   <br key="br1" />,
   <br key="br2" />,
   <br key="br3" />,
@@ -43,19 +48,14 @@ const description = [
 
 interface props {
   user: User;
-  setUser?: (user: User) => void;
   nextPhase: () => void;
-  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }
-const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
-  const [errors, setErrors] = useState({});
-  const [settings, setSettings] = useState(new Settings());
-  // const [mode, setMode] = useState(settings.mode);
+const SettingsPhase = ({ user, nextPhase }: props) => {
+  const [errors, setErrors] = useState<ErrorListError[]>([]);
+  const [settings, setSettings] = useState(user.settings);
   const [secretKey, setSecretKey] = useState(settings.secretKey);
-  const [beforeDate, setBeforeDate] = useState(settings.beforeDate);
-  const [afterDate, setAfterDate] = useState(settings.afterDate);
 
-  const disableSubmit = !!Object.values(errors).length; //|| (showSecretKey && secretKey.length !== secretKeyLength);
+  const disableSubmit = !!errors.length; //|| (showSecretKey && secretKey.length !== secretKeyLength);
   const showSecretKey = settings.mode !== MODES.DELETE;
 
   function validateSettings() {
@@ -68,7 +68,6 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
   function handleModeChange(event: ChangeEvent<HTMLSelectElement>) {
     const mode = event.target.value as MODES;
     settings.mode = mode;
-    // setMode(mode);
     validateSettings();
   }
 
@@ -77,33 +76,15 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
     validateSettings();
   }
 
-  function handleBeforeDateChange(dateString: string) {
-    handleDateChange(dateString, true);
-  }
-  function handleAfterDateChange(dateString: string) {
-    handleDateChange(dateString, false);
-  }
-  function handleDateChange(dateString: string, isBefore: boolean) {
-    let date = new Date(dateString)?.toISOString();
-    if (Number.isNaN(new Date(dateString))) {
-      date = "";
-    }
-    if (isBefore) {
-      settings.beforeDate = date;
-      setBeforeDate(date);
-    } else {
-      settings.afterDate = date;
-      setAfterDate(date);
-    }
-    validateSettings();
+  function handleDateChange(dateRange: RangeValue<ZonedDateTime>) {
+    settings.beforeDate = new Date(dateRange.start.toAbsoluteString());
+    settings.afterDate = new Date(dateRange.end.toAbsoluteString());
   }
 
   function handleOnSubmit(event: FormEvent) {
     event.preventDefault();
     const isValid = validateSettings();
     if (isValid) {
-      settings.beforeDate = settings.beforeDate && beforeDate;
-      settings.afterDate = settings.afterDate && afterDate;
       user.settings = settings;
       nextPhase();
     }
@@ -116,9 +97,9 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
         <form style={styles} onSubmit={handleOnSubmit}>
           <label htmlFor="mode">Mode: </label>
           <select id="mode" name="mode" onChange={handleModeChange}>
+            <option value={MODES.DELETE}>Delete Messages (unrecoverable!)</option>
             <option value={MODES.ENCRYPT}>Encrypt Messages</option>
             <option value={MODES.DECRYPT}>Decrypt Messages</option>
-            <option value={MODES.DELETE}>Delete Messages (unrecoverable!)</option>
           </select>
           {showSecretKey ? (
             <Input
@@ -132,17 +113,18 @@ const SettingsPhase = ({ user, setUser, nextPhase, setIsLoading }: props) => {
               onBlur={handleOnBlur}
             />
           ) : null}
-          <Input
-            type="datetime-local"
-            label="After Date (optional)"
-            value={DateFormatter.FormatDate(afterDate)}
-            onChange={handleAfterDateChange}
-          />
-          <Input
-            type="datetime-local"
-            label="Before Date (optional)"
-            value={DateFormatter.FormatDate(beforeDate)}
-            onChange={handleBeforeDateChange}
+          <br />
+          <DateRangePicker
+            label="Message Range"
+            hideTimeZone
+            visibleMonths={2}
+            onChange={handleDateChange}
+            minValue={parseAbsoluteToLocal(user.joinDate.toISOString())}
+            maxValue={parseAbsoluteToLocal(user.lastOnline.toISOString())}
+            defaultValue={{
+              start: parseAbsoluteToLocal(user.joinDate.toISOString()),
+              end: parseAbsoluteToLocal(user.lastOnline.toISOString()),
+            }}
           />
           <Button disabled={disableSubmit} type="submit" text="Next: Select Teams" />
         </form>

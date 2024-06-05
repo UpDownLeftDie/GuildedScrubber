@@ -1,3 +1,7 @@
+import { ErrorListError } from "@/components/ErrorList";
+import { GuildedChannel } from "./Channel";
+import Team from "./Team";
+
 export enum MODES {
   ENCRYPT = "encrypt",
   DECRYPT = "decrypt",
@@ -15,13 +19,13 @@ export default class Settings {
 
   mode: MODES;
   secretKey: string;
-  beforeDate?: string;
-  afterDate?: string;
-  selectedTeams: Map<any, any>;
-  selectedChannels: Map<any, any>;
+  beforeDate?: Date;
+  afterDate?: Date;
+  selectedTeams: Map<any, Team>;
+  selectedChannels: Map<any, GuildedChannel>;
 
   constructor({
-    mode = MODES.ENCRYPT,
+    mode = MODES.DELETE,
     secretKey = "",
     beforeDate = undefined,
     afterDate = undefined,
@@ -36,27 +40,11 @@ export default class Settings {
 
   static Validate(settings: Settings) {
     const { mode } = settings;
-    let errors: string[] = [];
+    let errors: ErrorListError[] = [];
 
     if (mode !== MODES.DELETE) {
       const { errors: secretKeyErrors } = Settings.ValidateSecretKey(settings);
       errors = [...errors, ...secretKeyErrors];
-    }
-
-    const { errors: dateErrors } = Settings.ValidateDates(settings);
-    errors = [...errors, ...dateErrors];
-
-    const isValid = !errors.length;
-    return { isValid, errors };
-  }
-
-  static ValidateDates(settings: Settings) {
-    const { beforeDate, afterDate } = settings;
-    let errors = [];
-    if (beforeDate && afterDate) {
-      if (afterDate >= beforeDate) {
-        errors.push(Settings.#ERRORS.DATES_ORDER);
-      }
     }
 
     const isValid = !errors.length;
@@ -65,16 +53,16 @@ export default class Settings {
 
   static ValidateSecretKey(settings: Settings) {
     const { secretKey } = settings;
-    let errors = [];
+    let errors: ErrorListError[] = [];
     if (!secretKey) {
       return {
         isValid: false,
-        errors: [Settings.#ERRORS.SECRET_KEY_NOT_FOUND],
+        errors: [{ type: "SECRET_KEY_NOT_FOUND", text: Settings.#ERRORS.SECRET_KEY_NOT_FOUND }],
       };
     }
 
     if (secretKey.length !== this.SecretKeyLength) {
-      errors.push(Settings.#ERRORS.SECRET_KEY_LENGTH);
+      errors.push({ type: "SECRET_KEY_LENGTH", text: Settings.#ERRORS.SECRET_KEY_LENGTH });
     }
 
     const isValid = !errors.length;

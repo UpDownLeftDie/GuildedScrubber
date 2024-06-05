@@ -1,8 +1,10 @@
-import Messages from "./Messages";
+import { Dispatch, SetStateAction } from "react";
 import FetchApi from "./FetchApi";
+import Messages, { GuildedMessage, GuildedMessageContentsById } from "./Messages";
+import User from "./User";
 
 export default class ChatChannel {
-  static async UpdateMessages(channelId: string, messages) {
+  static async UpdateMessages(channelId: string, messages: GuildedMessageContentsById) {
     for (const [messageId, data] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
@@ -12,7 +14,7 @@ export default class ChatChannel {
     }
   }
 
-  static async DeleteMessages(channelId: string, messages) {
+  static async DeleteMessages(channelId: string, messages: GuildedMessageContentsById) {
     for (const [messageId] of Object.entries(messages)) {
       await FetchApi({
         route: `channel/${channelId}/message/${messageId}`,
@@ -21,26 +23,39 @@ export default class ChatChannel {
     }
   }
 
-  static async Process({ user, channelId, setAction, deleteMode, decryptMode, messageLimit }) {
+  static async Process({
+    user,
+    channelId,
+    setAction,
+    deleteMode,
+    decryptMode,
+    messageLimit,
+  }: {
+    user: User;
+    channelId: string;
+    setAction: Dispatch<SetStateAction<string>>;
+    deleteMode: boolean;
+    decryptMode: boolean;
+    messageLimit: number;
+  }) {
     const { settings } = user;
     const { secretKey } = settings;
     let { beforeDate, afterDate } = settings;
     let messages = { length: 9999999 };
     let messageCount = 0;
-    let temp = 0;
     while (messages?.length >= messageLimit) {
       setAction("Loading messages");
-      const messages = await FetchApi({
+      const messages = (await FetchApi({
         route: `channel/${channelId}/messages`,
         headers: {
           ...(beforeDate && { "before-date": beforeDate }),
           ...(afterDate && { "after-date": afterDate }),
           ...(messageLimit && { "message-limit": messageLimit }),
         },
-      });
+      })) as GuildedMessage[];
 
       if (!messages?.length) break;
-      beforeDate = messages[messages.length - 1].createdAt;
+      beforeDate = new Date(messages[messages.length - 1].createdAt);
 
       const filteredMessages = Messages.FilterByUserAndMode(
         user.id,
@@ -53,7 +68,7 @@ export default class ChatChannel {
       }
       messageCount += filteredMessages.length;
 
-      let newMessages;
+      let newMessages: GuildedMessageContentsById;
       const texts = Messages.GetTextFromContent(filteredMessages);
       if (decryptMode) {
         setAction("Decrypting messages");
