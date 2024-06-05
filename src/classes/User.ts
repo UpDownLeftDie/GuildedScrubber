@@ -29,7 +29,12 @@ export default class User {
     this.id = guildedUser.id;
     this.name = guildedUser.name;
     this.joinDate = new Date(guildedUser.joinDate);
-    this.lastOnline = new Date(guildedUser.lastOnline);
+
+    {
+      let lastOnline = new Date(guildedUser.lastOnline);
+      lastOnline.setHours(lastOnline.getHours() + 3); // lastOnline doesn't seem to update very frequently
+      this.lastOnline = lastOnline;
+    }
     this.settings.afterDate = this.joinDate;
     this.settings.beforeDate = this.lastOnline;
     this.teams = await this.LoadTeams(guildedUser.teams);

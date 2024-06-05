@@ -37,8 +37,8 @@ export default class ApiService {
       },
     };
     const apiUrl = `${API_URL}${url}`;
-
-    console.log({ apiUrl, fetchOptions });
+    // beforeDate=2024-06-03T18%3A19%3A41.952Z
+    console.log({ apiUrl });
 
     return await fetch(apiUrl, fetchOptions)
       .then((res) => res.json())

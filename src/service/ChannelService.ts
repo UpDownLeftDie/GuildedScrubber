@@ -67,7 +67,6 @@ async function _getMessages({
 }) {
   let params = new URLSearchParams();
   params.append("limit", messageLimit.toString());
-  console.log({ beforeDate, afterDate });
   if (beforeDate) params.append("beforeDate", beforeDate);
   if (afterDate) params.append("afterDate", afterDate);
   const url = `/channels/${channelId}/messages?${params.toString()}`;

@@ -78,9 +78,8 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
   }
 
   function handleDateChange(dateRange: RangeValue<ZonedDateTime>) {
-    settings.beforeDate = new Date(dateRange.start.toAbsoluteString());
-    settings.afterDate = new Date(dateRange.end.toAbsoluteString());
-    console.log(dateRange.start.toAbsoluteString(), settings.beforeDate);
+    settings.afterDate = new Date(dateRange.start.toAbsoluteString());
+    settings.beforeDate = new Date(dateRange.end.toAbsoluteString());
   }
 
   function handleOnSubmit(event: FormEvent) {

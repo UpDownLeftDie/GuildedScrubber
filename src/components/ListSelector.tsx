@@ -54,8 +54,6 @@ const ListSelector = (props: props) => {
     });
   }
 
-  console.log({ checkedItems });
-
   const Checkboxes = getCheckBoxes();
   return (
     <>

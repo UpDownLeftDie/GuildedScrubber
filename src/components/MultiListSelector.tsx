@@ -24,7 +24,6 @@ function MultiListSelector(props: props) {
   }
 
   function handleValueChange(listName: CheckListName, checkedItems: CheckListItems) {
-    console.log({ checkedItems });
     setCheckedListItems((currentLists) => new Map(currentLists.set(listName, checkedItems)));
   }
 

@@ -50,7 +50,6 @@ const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase
     setIsLoading(true);
     setUser(await user.LoadUser(hmacInput));
     setIsLoading(false);
-    console.log(user.settings);
 
     nextPhase();
   };
