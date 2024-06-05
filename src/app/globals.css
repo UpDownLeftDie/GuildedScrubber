@@ -105,3 +105,12 @@ a {
     color-scheme: dark;
   }
 }
+
+
+html {
+  background-color: #3c3e48;
+  color: #ececee;
+}
+a {
+  color: #ececee;
+}
