@@ -1,0 +1,19 @@
+{
+  "editor.formatOnPaste":true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+  },
+  "cSpell.words": [
+    "apng",
+    "csstype",
+    "deepcode",
+    "listbox",
+    "nextui",
+    "stonks",
+    "tailwindcss"
+  ],
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true
+}
