@@ -1,8 +1,8 @@
-import ApiService from './ApiService';
+import ApiService from "./ApiService";
 
 export default class UserService {
   static async GetUser(hmac) {
-    const url = `/me?isLogin=true&v2=true`;
+    const url = `/me?isLogin=false&v2=true`;
     const res = await ApiService.FetchGuilded({ hmac, url });
     const { teams, user } = res;
     user.teams = teams;

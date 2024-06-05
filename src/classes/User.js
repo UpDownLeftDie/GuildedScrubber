@@ -1,20 +1,20 @@
-import Cookies from 'js-cookie';
-import { Team } from '.';
-import FetchApi from './FetchApi';
-import Settings from './Settings';
+import Cookies from "js-cookie";
+import { Team } from ".";
+import FetchApi from "./FetchApi";
+import Settings from "./Settings";
 
 export default class User {
   constructor() {
-    this.hmac = Cookies.get('guilded-hmac') || '';
+    this.hmac = (Cookies.get("guilded-hmac") || "").trim();
     this.guildedUser = {};
     this.teams = new Map();
     this.settings = new Settings();
-    this.id = '';
+    this.id = "";
   }
 
   async LoadUser(hmac) {
     this.#setHmac(hmac);
-    const guildedUser = await FetchApi({ route: 'user' });
+    const guildedUser = await FetchApi({ route: "user" });
 
     this.guildedUser = guildedUser;
     this.id = guildedUser.id;
@@ -23,7 +23,7 @@ export default class User {
   }
 
   async LoadDMs() {
-    if (this.teams.has('DMs')) return;
+    if (this.teams.has("DMs")) return;
 
     const dmChannels = await FetchApi({ route: `user/${this.id}/dms` });
     const channels = dmChannels.map((channel) => {
@@ -31,13 +31,13 @@ export default class User {
       const users = channel.users
         .filter((user) => user.id !== this.id)
         .map((user) => user.name);
-      const name = users.length ? users.join(', ') : 'You';
+      const name = users.length ? users.join(", ") : "You";
       channel.name = name;
       return channel;
     });
-    const dms = new Team('DMs', { channels });
-    dms.init({ name: 'DMs', isAdmin: false });
-    this.teams.set('DMs', dms);
+    const dms = new Team("DMs", { channels });
+    dms.init({ name: "DMs", isAdmin: false });
+    this.teams.set("DMs", dms);
 
     this.#saveTeams(this.teams);
   }
@@ -63,15 +63,15 @@ export default class User {
   }
 
   #loadTeams() {
-    return new Map(JSON.parse(localStorage.getItem('teams') || '[]'));
+    return new Map(JSON.parse(localStorage.getItem("teams") || "[]"));
   }
 
   #saveTeams(teams) {
-    localStorage.setItem('teams', JSON.stringify(Array.from(teams.entries())));
+    localStorage.setItem("teams", JSON.stringify(Array.from(teams.entries())));
   }
 
   #setHmac(hmac) {
-    Cookies.set('guilded-hmac', hmac);
+    Cookies.set("guilded-hmac", hmac);
     this.hmac = hmac;
   }
 }
