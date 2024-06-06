@@ -101,7 +101,8 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
           <Select
             label="Mode"
             placeholder="Select a mode"
-            defaultSelectedKeys={[MODES.DELETE]}
+            isRequired
+            defaultSelectedKeys={[settings.mode]}
             onChange={handleModeChange}
           >
             <SelectItem key={MODES.DELETE}>Delete Messages (unrecoverable!)</SelectItem>

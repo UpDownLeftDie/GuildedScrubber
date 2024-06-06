@@ -2,6 +2,7 @@
 // import Image from "next/image";
 // import styles from "./page.module.css";
 import { Button } from "@/atoms";
+import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
 import { Button as NButton } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 import Image from "next/image";
@@ -43,12 +44,12 @@ const pageContentStyles = {
 };
 
 enum PHASE {
-  HOMEPAGE,
-  LOAD_USER,
-  SETTINGS,
-  SELECT_TEAMS,
-  SELECT_CHANNELS,
-  RUNNING,
+  Home,
+  "Load User",
+  Settings,
+  Teams,
+  Channels,
+  Running,
 }
 
 // const tagLine = "Don't delete your account till you've scrubbed it!";
@@ -59,10 +60,27 @@ enum PHASE {
 export default function Home() {
   const [user, setUser] = useState(new User());
   const [slogan, setSlogan] = useState("");
-  const [currentPhase, setPhase] = useState(PHASE.HOMEPAGE);
-  const nextPhase = () => {
-    setPhase(currentPhase + 1);
+  const [currentPhase, setPhase] = useState(PHASE.Home);
+  const selectPhase = (phase: PHASE) => {
+    setPhase(phase);
   };
+  const nextPhase = () => {
+    selectPhase(currentPhase + 1);
+  };
+
+  function getBreadCrumbs() {
+    let crumbs = [];
+    for (let i = 0; i <= currentPhase; i++) {
+      crumbs.push(
+        <BreadcrumbItem key={PHASE[i]} onClick={() => setPhase(i)}>
+          {PHASE[i]}
+        </BreadcrumbItem>,
+      );
+    }
+    return crumbs;
+  }
+
+  const breadCrumbs = getBreadCrumbs();
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -81,7 +99,7 @@ export default function Home() {
   return (
     <>
       <main style={pageStyles}>
-        {currentPhase === PHASE.HOMEPAGE ? (
+        {currentPhase === PHASE.Home ? (
           <div style={headingStyles}>
             <Image
               src="/logo.png"
@@ -118,9 +136,11 @@ export default function Home() {
               to train AI models on chat messages.
             </div>
           </div>
-        ) : null}
+        ) : (
+          <Breadcrumbs>{breadCrumbs}</Breadcrumbs>
+        )}
         <div style={pageContentStyles}>
-          {currentPhase === PHASE.LOAD_USER ? (
+          {currentPhase === PHASE["Load User"] ? (
             <LoadUserPhase
               user={user}
               hmac={user.hmac}
@@ -129,18 +149,18 @@ export default function Home() {
               setIsLoading={setIsLoading}
               nextPhase={nextPhase}
             />
-          ) : currentPhase === PHASE.SETTINGS ? (
+          ) : currentPhase === PHASE.Settings ? (
             <SettingsPhase user={user} nextPhase={nextPhase} />
-          ) : currentPhase === PHASE.SELECT_TEAMS ? (
+          ) : currentPhase === PHASE.Teams ? (
             <TeamsSelectorPhase
               user={user}
               isLoading={isLoading}
               setIsLoading={setIsLoading}
               nextPhase={nextPhase}
             />
-          ) : currentPhase === PHASE.SELECT_CHANNELS ? (
+          ) : currentPhase === PHASE.Channels ? (
             <ChannelSelectorPhase user={user} nextPhase={nextPhase} />
-          ) : currentPhase === PHASE.RUNNING ? (
+          ) : currentPhase === PHASE.Running ? (
             <ProgressPhase user={user} />
           ) : null}
         </div>
