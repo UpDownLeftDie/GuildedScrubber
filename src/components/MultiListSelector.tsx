@@ -1,5 +1,5 @@
 import Button, { FlavorsKey } from "@/atoms/Button";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ListSelector from "./ListSelector";
 
 export type CheckListName = string;
@@ -18,13 +18,21 @@ interface props {
 function MultiListSelector(props: props) {
   const { submitLabel, flavor, checkItemsLists } = props;
   const [checkedListItems, setCheckedListItems] = useState<CheckItemsLists>(new Map());
+  const totalSelected = useRef(0);
 
   function onSubmit() {
     props.onSubmit(checkedListItems);
   }
 
   function handleValueChange(listName: CheckListName, checkedItems: CheckListItems) {
-    setCheckedListItems((currentLists) => new Map(currentLists.set(listName, checkedItems)));
+    setCheckedListItems((currentLists) => {
+      const newMap = new Map(currentLists.set(listName, checkedItems));
+      totalSelected.current = [...newMap.values()].reduce((count, checkListItems) => {
+        count += checkListItems.length;
+        return count;
+      }, 0);
+      return newMap;
+    });
   }
 
   const lists: JSX.Element[] = [];
@@ -44,7 +52,7 @@ function MultiListSelector(props: props) {
   return (
     <>
       {lists}
-      <Button onClick={onSubmit} text={submitLabel} flavor={flavor} />
+      <Button onClick={onSubmit} disabled={!totalSelected} text={submitLabel} flavor={flavor} />
     </>
   );
 }
