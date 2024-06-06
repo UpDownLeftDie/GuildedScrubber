@@ -2,6 +2,7 @@
 import { MODES } from "@/classes/Settings";
 import { ErrorListError } from "@/components/ErrorList";
 import { ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
+import { Chip } from "@nextui-org/chip";
 import { DateRangePicker } from "@nextui-org/date-picker";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
@@ -78,8 +79,12 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
   }
 
   function handleDateChange(dateRange: RangeValue<ZonedDateTime>) {
-    settings.afterDate = new Date(dateRange.start.toAbsoluteString());
-    settings.beforeDate = new Date(dateRange.end.toAbsoluteString());
+    if (dateRange?.start) {
+      settings.afterDate = new Date(dateRange.start.toAbsoluteString());
+    }
+    if (dateRange?.end) {
+      settings.beforeDate = new Date(dateRange.end.toAbsoluteString());
+    }
   }
 
   function handleOnSubmit(event: FormEvent) {
@@ -97,7 +102,6 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
         <ErrorList errors={errors} />
         <form style={styles} onSubmit={handleOnSubmit}>
           <label htmlFor="mode">Mode: </label>
-
           <Select
             label="Mode"
             placeholder="Select a mode"
@@ -122,15 +126,27 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
             />
           ) : null}
           <br />
+          <Chip
+            color="warning"
+            variant="dot"
+            classNames={{
+              dot: "bg-default",
+              base: "text-warning-foreground bg-warning",
+            }}
+          >
+            Min start date is based on when you joined Guilded!
+          </Chip>
           <DateRangePicker
             label="Message Range"
             hideTimeZone
+            isRequired
             visibleMonths={2}
+            // errorMessage={`Dates need to be between when you joined Guilded: (${parseAbsoluteToLocal(user.joinDate.toISOString())}) and your last online time.`}
             onChange={handleDateChange}
             minValue={parseAbsoluteToLocal(user.joinDate.toISOString())}
             maxValue={parseAbsoluteToLocal(user.lastOnline.toISOString())}
             defaultValue={{
-              start: parseAbsoluteToLocal(user.joinDate.toISOString()),
+              start: parseAbsoluteToLocal(user.monthBeforeLastOnline.toISOString()),
               end: parseAbsoluteToLocal(user.lastOnline.toISOString()),
             }}
           />

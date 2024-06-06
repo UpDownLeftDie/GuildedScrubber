@@ -4,7 +4,8 @@ const { nextui } = require("@nextui-org/theme");
 module.exports = {
   content: [
     "./src/app/page.tsx",
-    "./node_modules/@nextui-org/theme/dist/components/(breadcrumbs|button|checkbox|date-picker|divider|dropdown|input|modal|progress|ripple|select|skeleton|snippet|spinner|user|calendar|date-input|popover|menu|listbox|scroll-shadow|avatar).js",
+    "./src/app/SettingsPhase.tsx",
+    "./node_modules/@nextui-org/theme/dist/components/(breadcrumbs|button|checkbox|chip|date-picker|divider|dropdown|input|modal|progress|ripple|select|skeleton|snippet|spinner|user|calendar|date-input|popover|menu|listbox|scroll-shadow|avatar).js",
   ],
   theme: {
     extend: {},

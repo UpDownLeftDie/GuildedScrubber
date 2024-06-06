@@ -43,10 +43,11 @@ export default class Team {
     this.profilePicture = profilePicture;
     this.teamDashImage = teamDashImage;
     if (!this.channels?.length) {
-      const { channels, categories } = (await FetchApi({
+      const { channels, categories, temporalChannels } = (await FetchApi({
         route: `team/${this.id}`,
       })) as GuildedTeam;
-      this.channels = channels;
+      console.log({ temporalChannels });
+      this.channels = [...channels, ...temporalChannels];
       this.categories = categories;
     }
   }
@@ -62,6 +63,7 @@ export default class Team {
 interface GuildedTeam {
   channels: GuildedTeamChannel[];
   categories: GuildedTeamCategory[];
+  temporalChannels: GuildedChannel[];
 }
 
 interface GuildedTeamCategory {

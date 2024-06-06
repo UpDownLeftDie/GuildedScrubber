@@ -14,6 +14,7 @@ export default class User {
   name!: string;
   joinDate!: Date;
   lastOnline!: Date;
+  monthBeforeLastOnline!: Date;
 
   constructor() {
     this.hmac = (Cookies.get("guilded-hmac") || "").trim();
@@ -28,14 +29,18 @@ export default class User {
     this.guildedUser = guildedUser;
     this.id = guildedUser.id;
     this.name = guildedUser.name;
-    this.joinDate = new Date(guildedUser.joinDate);
+    this.joinDate = getRoundedDate(5, new Date(guildedUser.joinDate), Math.floor);
 
     {
       let lastOnline = new Date(guildedUser.lastOnline);
       lastOnline.setHours(lastOnline.getHours() + 3); // lastOnline doesn't seem to update very frequently
-      this.lastOnline = lastOnline;
+      lastOnline = getRoundedDate(5, lastOnline, Math.ceil);
+      this.lastOnline = new Date(lastOnline);
+
+      lastOnline.setMonth(lastOnline.getMonth() - 1);
+      this.monthBeforeLastOnline = lastOnline;
     }
-    this.settings.afterDate = this.joinDate;
+    this.settings.afterDate = this.monthBeforeLastOnline;
     this.settings.beforeDate = this.lastOnline;
     this.teams = await this.LoadTeams(guildedUser.teams);
     this.dms = await this.LoadDMs();
@@ -105,6 +110,16 @@ export default class User {
     Cookies.set("guilded-hmac", hmac.trim());
     this.hmac = hmac;
   }
+}
+
+function getRoundedDate(minutes: number, date = new Date(), mathFunc = Math.round) {
+  let ms = 1000 * 60 * minutes;
+  let roundedDate = new Date(mathFunc(date.getTime() / ms) * ms);
+
+  roundedDate.setMilliseconds(0);
+  roundedDate.setSeconds(0);
+
+  return roundedDate;
 }
 
 export interface GuildedUser {
