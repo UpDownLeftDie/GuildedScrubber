@@ -2,10 +2,7 @@
 import { MODES } from "@/classes/Settings";
 import { ErrorListError } from "@/components/ErrorList";
 import { ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
-import { Chip } from "@nextui-org/chip";
-import { DateRangePicker } from "@nextui-org/date-picker";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Chip, DateRangePicker, Input, Select, SelectItem } from "@nextui-org/react";
 import { RangeValue } from "@react-types/shared";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "../atoms";
@@ -134,7 +131,7 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
               base: "text-warning-foreground bg-warning",
             }}
           >
-            Min start date is based on when you joined Guilded!
+            Note: Min start date is based on when you joined Guilded!
           </Chip>
           <DateRangePicker
             label="Message Range"

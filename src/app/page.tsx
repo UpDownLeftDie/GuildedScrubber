@@ -2,9 +2,7 @@
 // import Image from "next/image";
 // import styles from "./page.module.css";
 import { Button } from "@/atoms";
-import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
-import { Button as NButton } from "@nextui-org/button";
-import { Snippet } from "@nextui-org/snippet";
+import { BreadcrumbItem, Breadcrumbs, Button as NButton, Snippet } from "@nextui-org/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { User } from "../classes";
@@ -18,7 +16,7 @@ import {
 
 const pageStyles = {
   color: "#ececee",
-  padding: "96px 0",
+  padding: "50px 35px 92px",
   marginLeft: "auto",
   marginRight: "auto",
   fontFamily: "Roboto, sans-serif, serif",
@@ -137,7 +135,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <Breadcrumbs>{breadCrumbs}</Breadcrumbs>
+          <Breadcrumbs style={{ marginBottom: "45px" }}>{breadCrumbs}</Breadcrumbs>
         )}
         <div style={pageContentStyles}>
           {currentPhase === PHASE["Load User"] ? (
@@ -175,9 +173,9 @@ export default function Home() {
             </NButton>
           </a>
           <br />
-          OR
+          or
           <br />
-          Email:
+          Email:{" "}
           <Snippet hideSymbol variant="bordered">
             support@guilded.gg
           </Snippet>

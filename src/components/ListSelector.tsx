@@ -1,6 +1,7 @@
-import { Checkbox, CheckboxGroup } from "@nextui-org/checkbox";
-import { useRef } from "react";
-import { CheckListItems, CheckListName } from "./MultiListSelector";
+import { GSCheckbox } from "@/atoms";
+import { CheckboxGroup } from "@nextui-org/react";
+import { useEffect, useState } from "react";
+import { CheckListName, CheckboxItemKey, CheckboxItemValue } from "./MultiListSelector";
 
 enum CheckAllState {
   NONE,
@@ -8,48 +9,54 @@ enum CheckAllState {
   ALL,
 }
 interface props {
-  listItems: string[];
+  listItems: Map<CheckboxItemKey, CheckboxItemValue>;
   listName: string;
-  checkedItems: string[];
-  handleValueChange: (listName: CheckListName, checkedItems: CheckListItems) => void;
+  checkedItems: CheckboxItemKey[];
+  handleValueChange: (listName: CheckListName, checkedItems: CheckboxItemKey[]) => void;
 }
 
 const ListSelector = (props: props) => {
   const { listName, listItems, checkedItems } = props;
-  let checkAllState = useRef(CheckAllState.NONE);
+  let [checkAllState, setCheckAllState] = useState(CheckAllState.NONE);
 
-  const handleValueChange = (newCheckedItems: CheckListItems) => {
-    props.handleValueChange(listName, newCheckedItems);
-  };
+  useEffect(() => {
+    const newState = getCheckAllState(checkedItems);
+    console.log(checkedItems.length, newState);
+    setCheckAllState(newState);
 
-  function _toggleCheckAll(isSelected: boolean) {
-    let newCheckedItems: string[] = [];
-    if (isSelected) {
-      checkAllState.current = CheckAllState.ALL;
-      newCheckedItems = listItems;
-    } else {
-      checkAllState.current = CheckAllState.NONE;
+    function getCheckAllState(checkedItems: CheckboxItemKey[]) {
+      let checkAllState = CheckAllState.NONE;
+      if (checkedItems.length === listItems.size) {
+        checkAllState = CheckAllState.ALL;
+      } else if (checkedItems.length > 0) {
+        checkAllState = CheckAllState.SOME;
+      }
+      return checkAllState;
+    }
+  }, [checkedItems, listItems.size]);
+
+  function toggleCheckAll() {
+    let newCheckedItems: CheckboxItemKey[] = [];
+    if (checkAllState !== CheckAllState.ALL) {
+      newCheckedItems = [...listItems.keys()];
     }
     handleValueChange(newCheckedItems);
   }
 
-  function _handleValueChange(newCheckedItems: string[]) {
-    let newState = CheckAllState.NONE;
-    if (newCheckedItems.length === listItems.length) {
-      newState = CheckAllState.ALL;
-    } else if (newCheckedItems.length > 0) {
-      newState = CheckAllState.SOME;
-    }
-    checkAllState.current = newState;
+  const handleValueChange = (newCheckedItems: CheckboxItemKey[]) => {
+    props.handleValueChange(listName, newCheckedItems);
+  };
+
+  function _handleValueChange(newCheckedItems: CheckboxItemKey[]) {
     handleValueChange(newCheckedItems);
   }
 
   function getCheckBoxes() {
-    return listItems.map((item) => {
+    return [...listItems.entries()].map(([key, value]) => {
       return (
-        <Checkbox key={item} value={item}>
-          {item}
-        </Checkbox>
+        <GSCheckbox key={key} value={key} color="warning">
+          {value}
+        </GSCheckbox>
       );
     });
   }
@@ -57,14 +64,13 @@ const ListSelector = (props: props) => {
   const Checkboxes = getCheckBoxes();
   return (
     <>
-      <Checkbox
-        onValueChange={_toggleCheckAll}
-        value={"all"}
-        checked={checkAllState.current === CheckAllState.ALL}
-        isIndeterminate={checkAllState.current === CheckAllState.SOME}
+      <GSCheckbox
+        onValueChange={toggleCheckAll}
+        isSelected={checkAllState === CheckAllState.ALL}
+        isIndeterminate={checkAllState === CheckAllState.SOME}
       >
         Check All - {listName}
-      </Checkbox>
+      </GSCheckbox>
       <CheckboxGroup
         style={{ paddingLeft: "25px" }}
         value={checkedItems}
