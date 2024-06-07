@@ -7,6 +7,7 @@ import Settings from "./Settings";
 export default class User {
   hmac: any;
   guildedUser!: GuildedUser;
+  guildedUserTeams!: GuildedUserTeam[];
   teams: Team[];
   dms!: Team;
   settings: Settings;
@@ -14,6 +15,7 @@ export default class User {
   name!: string;
   joinDate!: Date;
   lastOnline!: Date;
+  monthBeforeLastOnline!: Date;
 
   constructor() {
     this.hmac = (Cookies.get("guilded-hmac") || "").trim();
@@ -26,34 +28,48 @@ export default class User {
     const guildedUser = (await FetchApi({ route: "user" })) as GuildedUser;
 
     this.guildedUser = guildedUser;
+    this.guildedUserTeams = guildedUser.teams;
     this.id = guildedUser.id;
     this.name = guildedUser.name;
-    this.joinDate = new Date(guildedUser.joinDate);
+    this.joinDate = getRoundedDate(5, new Date(guildedUser.joinDate), Math.floor);
 
     {
       let lastOnline = new Date(guildedUser.lastOnline);
       lastOnline.setHours(lastOnline.getHours() + 3); // lastOnline doesn't seem to update very frequently
-      this.lastOnline = lastOnline;
+      lastOnline = getRoundedDate(5, lastOnline, Math.ceil);
+      this.lastOnline = new Date(lastOnline);
+
+      lastOnline.setMonth(lastOnline.getMonth() - 1);
+      this.monthBeforeLastOnline = lastOnline;
     }
-    this.settings.afterDate = this.joinDate;
+    this.settings.afterDate = this.monthBeforeLastOnline;
     this.settings.beforeDate = this.lastOnline;
-    this.teams = await this.LoadTeams(guildedUser.teams);
-    this.dms = await this.LoadDMs();
+    // this.teams = await this.LoadTeams(guildedUser.teams);
+    // this.dms = await this.LoadDMs();
     return this;
   }
 
-  async LoadDMs() {
+  async LoadDMs(): Promise<Team> {
     const dmChannels = (await FetchApi({
       route: `user/${this.id}/dms`,
     })) as GuildedDMChannel[];
-    const channels = dmChannels.map((channel) => {
-      if (channel.name) return channel;
-      const users = channel.users.filter((user) => user.id !== this.id).map((user) => user.name);
-      const name = users.length ? users.join(", ") : "You";
-      channel.name = name;
-      return channel;
-    });
-    const dms = new Team("DMs", { channels });
+    const channels = dmChannels
+      .map((channel) => {
+        if (channel.name) return channel;
+        const users = channel.users.filter((user) => user.id !== this.id).map((user) => user.name);
+        const name = users.length ? users.join(", ") : "You";
+        channel.name = name;
+        return channel;
+      })
+      .sort((a, b) => {
+        const aUpdatedAtDate = new Date(a.lastMessage?.createdAt ?? 0).getTime();
+        const bUpdatedAtDate = new Date(b.lastMessage?.createdAt ?? 0).getTime();
+        if (aUpdatedAtDate > bUpdatedAtDate) return -1;
+        if (aUpdatedAtDate < bUpdatedAtDate) return 1;
+        return 0;
+      });
+    const dms = new Team("DMs");
+    dms.channels = channels;
     dms.init({ name: "DMs", isAdmin: false });
     this.dms = dms;
 
@@ -68,43 +84,64 @@ export default class User {
         return [team.id, team];
       }),
     );
-    const storedTeams = this.#loadTeams();
+    const cachedTeams = this.#loadTeams();
+    console.log("preload teams", { cachedTeams });
 
+    const teamPromises: Promise<void>[] = [];
     const teams: Team[] = [];
     for (const [teamId, userTeam] of userTeams.entries()) {
-      const team = new Team(
-        teamId,
-        storedTeams.find((storedTeam) => storedTeam.id === teamId),
-      );
-      await team.init(userTeam);
+      const cachedTeam = cachedTeams.find((cachedTeam) => cachedTeam.id === teamId);
+      const team = Object.assign(new Team(teamId), cachedTeam);
       teams.push(team);
-      teamId;
-      this.#saveTeams(teams);
+      if (!team.channels?.length) {
+        teamPromises.push(team.init(userTeam));
+      }
     }
+    await Promise.all(teamPromises);
+
+    this.#saveTeams(teams);
 
     return teams;
   }
 
   #loadTeams(): Team[] {
-    return JSON.parse(localStorage.getItem("teams") || "[]");
+    return JSON.parse(localStorage.getItem("teams") ?? "[]") as Team[];
   }
 
   #saveTeams(teams: Team[]): void {
+    console.log("saving teams", { teams });
     localStorage.setItem("teams", JSON.stringify(teams));
   }
 
-  #loadDms(): Team[] {
-    return JSON.parse(localStorage.getItem("dms") || "[]");
+  #loadDms(): Team {
+    return JSON.parse(localStorage.getItem("dms") || "{}") as Team;
   }
 
   #saveDms(dms: Team): void {
-    localStorage.setItem("dms", JSON.stringify(dms));
+    const storedDms = this.#loadDms();
+    localStorage.setItem(
+      "dms",
+      JSON.stringify({
+        ...storedDms,
+        ...dms,
+      }),
+    );
   }
 
   #setHmac(hmac: string) {
     Cookies.set("guilded-hmac", hmac.trim());
     this.hmac = hmac;
   }
+}
+
+function getRoundedDate(minutes: number, date = new Date(), mathFunc = Math.round) {
+  let ms = 1000 * 60 * minutes;
+  let roundedDate = new Date(mathFunc(date.getTime() / ms) * ms);
+
+  roundedDate.setMilliseconds(0);
+  roundedDate.setSeconds(0);
+
+  return roundedDate;
 }
 
 export interface GuildedUser {

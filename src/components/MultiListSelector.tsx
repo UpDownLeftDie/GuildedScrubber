@@ -1,50 +1,90 @@
 import Button, { FlavorsKey } from "@/atoms/Button";
-import { useState } from "react";
+import { Divider } from "@nextui-org/react";
+import { useEffect, useRef, useState } from "react";
 import ListSelector from "./ListSelector";
 
+export type CheckboxItemKey = string;
+export type CheckboxItemValue = string;
+export type CheckListItems = Map<CheckboxItemKey, CheckboxItemValue>;
 export type CheckListName = string;
-export type CheckListItems = string[];
-export type CheckItemsLists = Map<CheckListName, CheckListItems>;
+export type CheckLists = Map<CheckListName, CheckListItems>;
 
 interface props {
   submitLabel: string;
   listsName: string;
-  checkItemsLists: CheckItemsLists;
-  onSubmit: (selectedListsItems: CheckItemsLists) => Promise<void>;
+  checkLists: CheckLists;
+  onSubmit: (selectedListsItems: CheckLists) => Promise<void>;
   isLoading?: boolean;
   flavor?: FlavorsKey;
+  additionalSelectedCount?: number;
 }
 
 function MultiListSelector(props: props) {
-  const { submitLabel, flavor, checkItemsLists } = props;
-  const [checkedListItems, setCheckedListItems] = useState<CheckItemsLists>(new Map());
+  const { submitLabel, flavor, checkLists, additionalSelectedCount = 0 } = props;
+  const [checkedListsItems, setCheckedListsItems] = useState<CheckLists>(new Map());
+  const totalSelected = useRef(0);
 
   function onSubmit() {
-    props.onSubmit(checkedListItems);
+    props.onSubmit(checkedListsItems);
   }
 
-  function handleValueChange(listName: CheckListName, checkedItems: CheckListItems) {
-    setCheckedListItems((currentLists) => new Map(currentLists.set(listName, checkedItems)));
+  useEffect(() => {
+    handleValueChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [additionalSelectedCount]);
+
+  function handleValueChange(listName?: CheckListName, checkedItemKeys?: CheckboxItemKey[]) {
+    setCheckedListsItems((currentLists) => {
+      let newMap = new Map(currentLists);
+
+      if (listName && checkedItemKeys) {
+        const currentList = checkLists.get(listName) ?? new Map();
+        const listCheckedItems: CheckListItems = checkedItemKeys.reduce((acc, key) => {
+          const isChecked = currentList.get(key);
+          if (isChecked) {
+            acc.set(key, isChecked);
+          }
+          return new Map(acc);
+        }, new Map() as CheckListItems);
+        newMap = new Map(currentLists.set(listName, listCheckedItems));
+      }
+
+      const checkedCount = [...newMap.values()].reduce((count, checkListItems) => {
+        count += checkListItems.size;
+        return count;
+      }, 0);
+      totalSelected.current = checkedCount + additionalSelectedCount;
+      return newMap;
+    });
   }
 
   const lists: JSX.Element[] = [];
-  for (const [name, options] of checkItemsLists.entries()) {
-    const checkedItems = checkedListItems.get(name) || [];
+  for (const [name, options] of checkLists.entries()) {
+    const checkedList = checkedListsItems.get(name) ?? new Map();
+    const checkedItems = [...checkedList.keys()];
     lists.push(
-      <ListSelector
-        key={name}
-        listName={name}
-        listItems={options}
-        checkedItems={checkedItems}
-        handleValueChange={handleValueChange}
-      />,
+      <>
+        <ListSelector
+          key={name}
+          listName={name}
+          listItems={options}
+          checkedItems={checkedItems}
+          handleValueChange={handleValueChange}
+        />
+        <Divider className="my-4" />
+      </>,
     );
   }
 
   return (
     <>
       {lists}
-      <Button onClick={onSubmit} text={submitLabel} flavor={flavor} />
+      <Button
+        onClick={onSubmit}
+        disabled={!totalSelected.current}
+        text={submitLabel}
+        flavor={flavor}
+      />
     </>
   );
 }

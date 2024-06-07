@@ -1,6 +1,6 @@
 import { Button } from "@/atoms";
 import { FlavorsKey } from "@/atoms/Button";
-import { Input } from "@nextui-org/input";
+import { Input } from "@nextui-org/react";
 import type * as CSS from "csstype";
 import { MouseEventHandler } from "react";
 

@@ -1,6 +1,6 @@
 import { GuildedChannel } from "@/classes/Channel";
 import { MultiListSelector } from "@/components";
-import { CheckItemsLists } from "@/components/MultiListSelector";
+import { CheckListItems, CheckLists } from "@/components/MultiListSelector";
 import { ContentContainer } from "@/templates";
 import { Team, User } from "../classes";
 
@@ -11,13 +11,14 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
   const sectionNameSingular = "Channel";
   const sectionName = `${sectionNameSingular}s`;
 
-  const onSubmit = async (selectedTeamChannels: CheckItemsLists) => {
+  const onSubmit = async (selectedItemsList: CheckLists) => {
     const selectedChannels: Set<GuildedChannel> = new Set();
-    for (const [teamName, channelNames] of selectedTeamChannels.entries()) {
+    for (const [teamName, channelsMappedById] of selectedItemsList.entries()) {
+      console.log({ teamName, channelsMappedById });
       const team = Team.GetTeamByName(teamName, user.settings.selectedTeams);
       if (!team) return;
-      for (const channelName of channelNames) {
-        const channel = team.channels.find((channel) => channel.name === channelName);
+      for (const channelId of channelsMappedById.keys()) {
+        const channel = team.channels.find((channel) => channel.id === channelId);
         if (!channel) continue;
         selectedChannels.add({
           ...channel,
@@ -30,22 +31,30 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
     nextPhase();
   };
 
-  function convertChannelsToCheckItemsList(teams: Team[]): CheckItemsLists {
-    const teamsWithChannels: CheckItemsLists = new Map();
+  function convertChannelsToCheckLists(teams: Team[]): CheckLists {
+    const teamsWithChannels: CheckLists = new Map();
     teams.forEach((team) => {
-      const listItems = team.channels.map((channel) => channel.name);
-      teamsWithChannels.set(team.name, listItems);
+      const listItems: CheckListItems = new Map(
+        team.channels.map((channel) => {
+          const channelName = `${channel.groupName ? `[${channel.groupName}] ` : ""}${channel.name}`;
+          return [channel.id, channelName];
+        }),
+      );
+      if (listItems.size) {
+        teamsWithChannels.set(team.name, listItems);
+      }
     });
 
     return teamsWithChannels;
   }
 
-  const checkItemsLists = convertChannelsToCheckItemsList(user.settings.selectedTeams);
+  console.log({ selectedTeams: user.settings.selectedTeams });
+  const checkLists = convertChannelsToCheckLists(user.settings.selectedTeams);
 
   return (
     <ContentContainer headerText={sectionName} description={description}>
       <MultiListSelector
-        checkItemsLists={checkItemsLists}
+        checkLists={checkLists}
         submitLabel="Scrub"
         flavor="goldSolid"
         onSubmit={onSubmit}

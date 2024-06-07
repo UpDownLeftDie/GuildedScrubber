@@ -1,10 +1,11 @@
-import MultiListSelector, { CheckItemsLists } from "@/components/MultiListSelector";
-import { Dispatch, SetStateAction } from "react";
-import { Channel, Team, User } from "../classes";
+import { GSCheckbox } from "@/atoms";
+import { GuildedUserTeam } from "@/classes/User";
+import MultiListSelector, { CheckListItems, CheckLists } from "@/components/MultiListSelector";
+import { Dispatch, SetStateAction, useState } from "react";
+import { Team, User } from "../classes";
 import { ContentContainer } from "../templates";
 
-const description =
-  "Pick teams you want to load channels from. You will pick which channels to act on in the next step.";
+const description = "Pick teams you want to load channels from.";
 
 interface props {
   user: User;
@@ -16,44 +17,60 @@ const TeamsSelectorPhase = ({ user, isLoading, setIsLoading, nextPhase }: props)
   const sectionNameSingular = "team";
   const sectionName = `${sectionNameSingular}s`;
 
-  const onSubmit = async (selectedItemsList: CheckItemsLists) => {
+  const [isDMsChecked, setIsDMsChecked] = useState(false);
+  function handleOnChange() {
+    setIsDMsChecked((isChecked) => !isChecked);
+  }
+
+  async function onSubmit(selectedItemsList: CheckLists = new Map()) {
     const teamNames = selectedItemsList.get("Teams");
-    if (!teamNames) return;
+    if (!teamNames && !isDMsChecked) return;
     setIsLoading(true);
 
-    const teams: Team[] = [];
-    teamNames.forEach((teamName) => {
-      const team = user.teams.find((team) => team.name === teamName);
-      if (!team) return;
-      const filteredChannels = Channel.FilterChannelsByMode(team.channels, user.settings.mode);
-      team.channels = filteredChannels;
-      teams.push(team);
+    const guildedTeams: GuildedUserTeam[] = [];
+    teamNames?.forEach((teamName) => {
+      const guildedTeam = user.guildedUserTeams.find((team) => team.name === teamName);
+      if (!guildedTeam) return;
+      guildedTeams.push(guildedTeam);
     });
+    const [selectedTeams, dms] = await Promise.all([
+      user.LoadTeams(guildedTeams),
+      isDMsChecked ? user.LoadDMs() : Promise.resolve({} as Team),
+    ]);
 
-    if (teamNames.includes("DMs")) {
-      await user.LoadDMs();
+    // const filteredChannels = Channel.FilterChannelsByMode(team.channels, user.settings.mode);
+    // team.channels = filteredChannels;
+    // teams.push(team);
+
+    if (dms?.channels?.length) {
+      selectedTeams.unshift(dms);
     }
-
-    user.settings.selectedTeams = teams;
+    user.settings.selectedTeams = selectedTeams;
     setIsLoading(false);
     nextPhase();
-  };
+  }
 
-  function convertTeamsToCheckItemsList(teams: Team[]): CheckItemsLists {
-    const listItems = teams.map((team) => team.name);
+  function convertTeamsToCheckLists(teams: GuildedUserTeam[]): CheckLists {
+    const listItems: CheckListItems = new Map(teams.map((team) => [team.id, team.name]));
     return new Map([["Teams", listItems]]);
   }
 
-  const checkItemsLists = convertTeamsToCheckItemsList(user.teams);
+  const checkLists = convertTeamsToCheckLists(user.guildedUserTeams);
 
   return (
     <ContentContainer headerText={sectionName} description={description}>
+      <GSCheckbox value={"DMs"} checked={isDMsChecked} onChange={handleOnChange}>
+        Direct Messages
+      </GSCheckbox>
+      <br />
+      <br />
       <MultiListSelector
         submitLabel="Load Channels"
         listsName="Teams"
-        checkItemsLists={checkItemsLists}
+        checkLists={checkLists}
         onSubmit={onSubmit}
         isLoading={isLoading}
+        additionalSelectedCount={isDMsChecked ? 1 : 0}
       />
     </ContentContainer>
   );
