@@ -1,8 +1,8 @@
 import { GSCheckbox } from "@/atoms";
-import { GuildedUserTeam } from "@/classes/User";
+import { Team } from "@/classes";
+import User, { GuildedUserTeam } from "@/classes/User";
 import MultiListSelector, { CheckListItems, CheckLists } from "@/components/MultiListSelector";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Team, User } from "../classes";
 import { ContentContainer } from "../templates";
 
 const description = "Pick teams you want to load channels from.";

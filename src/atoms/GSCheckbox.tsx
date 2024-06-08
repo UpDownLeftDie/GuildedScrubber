@@ -1,6 +1,6 @@
 import { Checkbox, extendVariants } from "@nextui-org/react";
 
-export const GSCheckbox = extendVariants(Checkbox, {
+const GSCheckbox = extendVariants(Checkbox, {
   variants: {
     color: {
       warning: {
@@ -22,3 +22,5 @@ export const GSCheckbox = extendVariants(Checkbox, {
   },
   compoundVariants: [],
 });
+
+export default GSCheckbox;

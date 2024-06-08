@@ -1,8 +1,8 @@
 import Cookies from "js-cookie";
-import { Team } from ".";
 import { GuildedDMChannel } from "./Channel";
 import FetchApi from "./FetchApi";
 import Settings from "./Settings";
+import Team from "./Team";
 
 export default class User {
   hmac: any;

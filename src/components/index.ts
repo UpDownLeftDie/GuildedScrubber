@@ -1,6 +1,7 @@
-import ErrorList from "./ErrorList";
-import InputWithSubmit from "./InputWithSubmit";
-import ListSelector from "./ListSelector";
-import MultiListSelector from "./MultiListSelector";
+// @create-index {"ignore":["/index.ts$/"]}
 
-export { ErrorList, InputWithSubmit, ListSelector, MultiListSelector };
+export { default as ErrorList } from './ErrorList.tsx';
+export { default as InputWithSubmit } from './InputWithSubmit.tsx';
+export { default as ListSelector } from './ListSelector.tsx';
+export { default as MultiListSelector } from './MultiListSelector.tsx';
+

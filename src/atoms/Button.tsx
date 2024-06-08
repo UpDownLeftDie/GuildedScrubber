@@ -1,4 +1,4 @@
-import type * as CSS from 'csstype';
+import type * as CSS from "csstype";
 import { MouseEventHandler } from "react";
 
 const style: CSS.Properties = {
@@ -45,7 +45,14 @@ interface ButtonProps {
   flavor?: FlavorsKey;
   customStyle?: CSS.Properties;
 }
-const Button = ({ disabled = false, text, type = "button", onClick, flavor, customStyle = {} }: ButtonProps) => {
+const Button = ({
+  disabled = false,
+  text,
+  type = "button",
+  onClick,
+  flavor,
+  customStyle = {},
+}: ButtonProps) => {
   const styles = {
     ...style,
     ...(flavor && flavors[flavor]),

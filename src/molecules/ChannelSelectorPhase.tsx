@@ -1,9 +1,8 @@
+import { Team, User } from "@/classes";
 import { GuildedChannel } from "@/classes/Channel";
 import { MultiListSelector } from "@/components";
 import { CheckListItems, CheckLists } from "@/components/MultiListSelector";
 import { ContentContainer } from "@/templates";
-import { Team, User } from "../classes";
-
 const description =
   "Select which channels you would like to delete/encrypt/decrypt your messages from.";
 

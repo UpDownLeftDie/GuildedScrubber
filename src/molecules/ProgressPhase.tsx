@@ -1,6 +1,6 @@
+import { GuildedScrubber, User } from "@/classes";
 import { Progress } from "@nextui-org/react";
 import { useEffect, useState } from "react";
-import { GuildedScrubber, User } from "../classes";
 import { ContentContainer } from "../templates";
 
 interface props {

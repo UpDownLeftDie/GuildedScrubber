@@ -1,5 +1,5 @@
 import Hmac from "@/classes/Hmac";
-import { MessageService } from "@/service";
+import { MessageService } from "@/services";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

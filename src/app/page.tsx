@@ -2,10 +2,10 @@
 // import Image from "next/image";
 // import styles from "./page.module.css";
 import { Button } from "@/atoms";
+import { User } from "@/classes";
 import { BreadcrumbItem, Breadcrumbs, Button as NButton, Snippet } from "@nextui-org/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { User } from "../classes";
 import {
   ChannelSelectorPhase,
   LoadUserPhase,
