@@ -1,5 +1,5 @@
 import { GSCheckbox } from "@/atoms";
-import { CheckboxGroup } from "@nextui-org/react";
+import { CheckboxGroup, Chip, Tooltip } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import { CheckListName, CheckboxItemKey, CheckboxItemValue } from "./MultiListSelector";
 
@@ -53,10 +53,27 @@ const ListSelector = (props: props) => {
 
   function getCheckBoxes() {
     return [...listItems.entries()].map(([key, value]) => {
+      let chip = null;
+      const groupNameResult = RegExp(/^\[([^\[]*)\]\W(.*)$/).exec(value);
+      const groupName = groupNameResult?.[1];
+      if (groupName) {
+        value = groupNameResult?.[2];
+        chip = (
+          <Tooltip content="Server group" delay={1200} closeDelay={0}>
+            <Chip className="ml-2" variant="bordered" size="sm">
+              {groupName}
+            </Chip>
+          </Tooltip>
+        );
+      }
+
       return (
-        <GSCheckbox key={key} value={key} color="warning">
-          {value}
-        </GSCheckbox>
+        <span key={key}>
+          <GSCheckbox value={key} color="warning">
+            {value}
+          </GSCheckbox>
+          {chip}
+        </span>
       );
     });
   }

@@ -53,7 +53,7 @@ export default class Team {
             channel.channelCategory = categoriesMap.get(channel.channelCategoryId)?.name || null;
           }
           if (channel.groupId) {
-            channel.groupName = groupMap.get(channel.groupId)?.name || null;
+            channel.groupName = groupMap.get(channel.groupId)?.name.trim() || null;
           }
           return channel;
         })

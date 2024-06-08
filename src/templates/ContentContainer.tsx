@@ -18,7 +18,7 @@ const descriptionStyle: CSS.Properties = { marginBottom: "25px" };
 const instructionsStyle: CSS.Properties = { marginTop: "20px" };
 
 const contentStyles = {
-  maxWidth: "400px",
+  maxWidth: "500px",
   margin: "auto",
   marginBottom: "20px",
 };
