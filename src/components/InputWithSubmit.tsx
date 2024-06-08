@@ -1,5 +1,4 @@
-import { Button } from "@/atoms";
-import { FlavorsKey } from "@/atoms/Button";
+import { GSButton } from "@/atoms";
 import { Input } from "@nextui-org/react";
 import type * as CSS from "csstype";
 import { MouseEventHandler } from "react";
@@ -19,8 +18,9 @@ interface props {
   submitDisabled?: boolean;
   submitText: string;
   submitOnClick: MouseEventHandler<HTMLButtonElement>;
-  submitFlavor?: FlavorsKey;
+  submitFlavor?: string;
   style?: CSS.Properties;
+  isLoading: boolean;
 }
 const InputWithSubmit = (props: props) => {
   const {
@@ -30,11 +30,12 @@ const InputWithSubmit = (props: props) => {
     inputPlaceholder,
     inputDisabled = false,
     inputMaxLength,
+    isLoading = false,
   } = props;
   const { submitDisabled = false, submitText, submitOnClick, submitFlavor } = props;
 
   return (
-    <div style={{ ...style, ...props.style }}>
+    <div className="space-y-4" style={{ ...style, ...props.style }}>
       <Input
         label={inputLabel}
         value={inputValue}
@@ -43,12 +44,15 @@ const InputWithSubmit = (props: props) => {
         disabled={inputDisabled}
         maxLength={inputMaxLength}
       />
-      <Button
-        disabled={submitDisabled}
-        text={submitText}
+      <GSButton
+        color="gold"
+        type="submit"
+        isLoading={isLoading}
+        isDisabled={submitDisabled}
         onClick={submitOnClick}
-        flavor={submitFlavor}
-      />
+      >
+        {submitText}
+      </GSButton>
     </div>
   );
 };

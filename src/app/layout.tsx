@@ -24,6 +24,14 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <a
+          className="github-fork-ribbon"
+          href="https://github.com/UpDownLeftDie/GuildedScrubber"
+          data-ribbon="Fork me on GitHub"
+          title="Fork me on GitHub"
+        >
+          Fork me on GitHub
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

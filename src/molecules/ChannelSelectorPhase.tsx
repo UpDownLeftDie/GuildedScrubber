@@ -35,7 +35,7 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
     teams.forEach((team) => {
       const listItems: CheckListItems = new Map(
         team.channels.map((channel) => {
-          const channelName = `${channel.groupName ? `[${channel.groupName}] ` : ""}${channel.name}`;
+          const channelName = `${channel.groupName ? `[${channel.groupName}] ` : ""}${channel.name.trim()}`;
           return [channel.id, channelName];
         }),
       );
@@ -56,6 +56,7 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
         checkLists={checkLists}
         submitLabel="Scrub"
         flavor="goldSolid"
+        size="xl"
         onSubmit={onSubmit}
         listsName={sectionNameSingular}
       />

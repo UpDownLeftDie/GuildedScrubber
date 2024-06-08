@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/atoms";
+import { GSButton } from "@/atoms";
 import { Settings, User } from "@/classes";
 import { MODES } from "@/classes/Settings";
 import ErrorList, { ErrorListError } from "@/components/ErrorList";
@@ -15,7 +15,7 @@ const styles = {
   flexDirection: "column" as const,
 };
 
-const description = [
+const instructions = [
   <ul key="ul">
     <li>
       Delete:
@@ -93,11 +93,10 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
   }
 
   return (
-    <ContentContainer headerText={"Settings"} description={description}>
+    <ContentContainer headerText={"Settings"} instructions={instructions}>
       <>
         <ErrorList errors={errors} />
         <form style={styles} onSubmit={handleOnSubmit}>
-          <label htmlFor="mode">Mode: </label>
           <Select
             label="Mode"
             placeholder="Select a mode"
@@ -137,7 +136,6 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
             hideTimeZone
             isRequired
             visibleMonths={2}
-            // errorMessage={`Dates need to be between when you joined Guilded: (${parseAbsoluteToLocal(user.joinDate.toISOString())}) and your last online time.`}
             onChange={handleDateChange}
             minValue={parseAbsoluteToLocal(user.joinDate.toISOString())}
             maxValue={parseAbsoluteToLocal(user.lastOnline.toISOString())}
@@ -146,7 +144,9 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
               end: parseAbsoluteToLocal(user.lastOnline.toISOString()),
             }}
           />
-          <Button disabled={disableSubmit} type="submit" text="Next: Select Teams" />
+          <GSButton isDisabled={disableSubmit} type="submit">
+            Next: Select Teams
+          </GSButton>
         </form>
       </>
     </ContentContainer>
