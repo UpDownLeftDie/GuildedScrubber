@@ -11,7 +11,7 @@ const codeStyles = {
   fontFamily: "monospace",
 };
 
-const description = [
+const instructions = [
   "Get this from your ",
   <a
     href="https://developer.chrome.com/docs/devtools/storage/cookies/#open"
@@ -55,7 +55,7 @@ const LoadUserPhase = ({ hmac, user, setUser, isLoading, setIsLoading, nextPhase
   };
 
   return (
-    <ContentContainer headerText={"Load user"} description={description}>
+    <ContentContainer headerText={"Load user"} instructions={instructions}>
       <InputWithSubmit
         inputLabel={"Guilded hmac_signed_session"}
         style={styles}

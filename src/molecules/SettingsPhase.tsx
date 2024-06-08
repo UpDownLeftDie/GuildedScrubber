@@ -15,7 +15,7 @@ const styles = {
   flexDirection: "column" as const,
 };
 
-const description = [
+const instructions = [
   <ul key="ul">
     <li>
       Delete:
@@ -93,7 +93,7 @@ const SettingsPhase = ({ user, nextPhase }: props) => {
   }
 
   return (
-    <ContentContainer headerText={"Settings"} description={description}>
+    <ContentContainer headerText={"Settings"} instructions={instructions}>
       <>
         <ErrorList errors={errors} />
         <form style={styles} onSubmit={handleOnSubmit}>

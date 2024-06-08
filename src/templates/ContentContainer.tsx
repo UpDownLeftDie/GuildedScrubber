@@ -14,7 +14,8 @@ const headerStyles: CSS.Properties = {
   textTransform: "capitalize" as const,
 };
 
-const descriptionStyle: CSS.Properties = { marginBottom: "20px" };
+const descriptionStyle: CSS.Properties = { marginBottom: "25px" };
+const instructionsStyle: CSS.Properties = { marginTop: "20px" };
 
 const contentStyles = {
   maxWidth: "400px",
@@ -26,8 +27,9 @@ interface props {
   headerText: string;
   children?: any;
   description?: string | (string | ReactElement)[];
+  instructions?: string | (string | ReactElement)[];
 }
-const ContentContainer = ({ headerText, children, description }: props) => {
+const ContentContainer = ({ headerText, children, description, instructions }: props) => {
   if (typeof description !== "string") {
     description = description?.map?.((item, key) => {
       if (typeof item === "string") return item;
@@ -40,6 +42,7 @@ const ContentContainer = ({ headerText, children, description }: props) => {
       {headerText ? <h2 style={headerStyles}>{headerText}</h2> : null}
       <div style={descriptionStyle}>{description}</div>
       <div style={contentStyles}>{children}</div>
+      <div style={instructionsStyle}>{instructions}</div>
     </div>
   );
 };
