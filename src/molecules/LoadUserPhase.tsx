@@ -1,7 +1,7 @@
 import User from "@/classes/User";
+import { InputWithSubmit } from "@/components";
+import { ContentContainer } from "@/templates";
 import { Dispatch, SetStateAction, useState } from "react";
-import { InputWithSubmit } from "../components";
-import { ContentContainer } from "../templates";
 
 const styles = {};
 

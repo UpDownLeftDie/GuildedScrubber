@@ -3,16 +3,16 @@
 // import styles from "./page.module.css";
 import { Button } from "@/atoms";
 import { User } from "@/classes";
-import { BreadcrumbItem, Breadcrumbs, Button as NButton, Snippet } from "@nextui-org/react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
 import {
   ChannelSelectorPhase,
   LoadUserPhase,
   ProgressPhase,
   SettingsPhase,
   TeamsSelectorPhase,
-} from "../molecules";
+} from "@/molecules";
+import { BreadcrumbItem, Breadcrumbs, Button as NButton, Snippet } from "@nextui-org/react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const pageStyles = {
   color: "#ececee",
