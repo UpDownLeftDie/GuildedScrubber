@@ -1,7 +1,5 @@
+import { FetchApi, Messages, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
-import { User } from ".";
-import FetchApi from "./FetchApi";
-import Messages from "./Messages";
 
 export default class AnnouncementChannel {
   static async Process({

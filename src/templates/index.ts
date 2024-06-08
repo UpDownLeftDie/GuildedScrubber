@@ -1,3 +1,4 @@
-import ContentContainer from "./ContentContainer";
+// @create-index {"ignore":["/index.ts$/"]}
 
-export { ContentContainer };
+export { default as ContentContainer } from './ContentContainer.tsx';
+

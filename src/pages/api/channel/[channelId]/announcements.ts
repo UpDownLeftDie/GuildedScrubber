@@ -1,6 +1,6 @@
 import Hmac from "@/classes/Hmac";
+import { ChannelService } from "@/services";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ChannelService } from "../../../../service";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
     const channelId = req.query.channelId as string;
