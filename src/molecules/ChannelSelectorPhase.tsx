@@ -56,6 +56,7 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
         checkLists={checkLists}
         submitLabel="Scrub"
         flavor="goldSolid"
+        size="xl"
         onSubmit={onSubmit}
         listsName={sectionNameSingular}
       />

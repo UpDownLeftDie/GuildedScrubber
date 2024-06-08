@@ -1,28 +1,27 @@
 "use client";
 // import Image from "next/image";
 // import styles from "./page.module.css";
-import { Button } from "@/atoms";
+import { GSButton } from "@/atoms";
 import { User } from "@/classes";
 import {
   ChannelSelectorPhase,
+  DeleteAccount,
   LoadUserPhase,
   ProgressPhase,
   SettingsPhase,
   TeamsSelectorPhase,
 } from "@/molecules";
-import { BreadcrumbItem, Breadcrumbs, Button as NButton, Snippet } from "@nextui-org/react";
+import { BreadcrumbItem, Breadcrumbs, Divider } from "@nextui-org/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const pageStyles = {
   color: "#ececee",
   padding: "50px 35px 92px",
-  marginLeft: "auto",
-  marginRight: "auto",
   fontFamily: "Roboto, sans-serif, serif",
   textAlign: "center" as const,
-  maxWidth: 600,
   display: "flex",
+  maxWidth: 800,
   flexDirection: "column" as const,
 };
 const headingStyles = {
@@ -95,112 +94,77 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <main style={pageStyles}>
-        {currentPhase === PHASE.Home ? (
-          <div style={headingStyles}>
-            <Image
-              src="/logo.png"
-              width={400}
-              height={400}
-              alt="Guilded Scrubber"
-              priority={true}
-              style={{ display: "inline-block" }}
-            />
-            <h1>Guilded Scrubber</h1>
-            <span style={sloganStyles}>{slogan}</span>
-            <br />
-            <Button
-              text="Start"
-              customStyle={{ fontSize: "3em" }}
-              onClick={nextPhase}
-              flavor="goldSolid"
-            />
-            <br />
-            <br />
-            <br />
-            <h3>Delete or encrypt, some or all, of your messages on Guilded!</h3>
-            <div>
-              Looking to delete your account but don&apos;t want all your messages left behind?
-              <br />
+    <main className="container mx-auto" style={pageStyles}>
+      {currentPhase === PHASE.Home ? (
+        <div className="flex flex-col items-center" style={headingStyles}>
+          <Image
+            src="/logo.png"
+            width={400}
+            height={400}
+            alt="Guilded Scrubber"
+            priority={true}
+            style={{ display: "inline-block" }}
+          />
+          <h1>Guilded Scrubber</h1>
+          <h2 style={sloganStyles}>{slogan}</h2>
+          <GSButton
+            type="button"
+            style={{ margin: "20px 0" }}
+            size="xl"
+            color="goldSolid"
+            onClick={nextPhase}
+          >
+            Start
+          </GSButton>
+          <h3 style={{ marginBottom: "30px" }}>
+            Delete, some or all, of your messages on Guilded!
+          </h3>
+          <div className="space-y-3">
+            <p>Looking to delete your account but don&apos;t want all your messages left behind?</p>
+            <p>
               <strong>Guilded Scrubber</strong> lets you select specific teams/server and date
               ranges to remove messages.
-              <br />
+            </p>
+            <p>
               Ensuring you remove all personal information that you might have left behind and{" "}
               <u>automatically editing them before deleting them to help maximize your privacy!</u>
-              <br />
-              <br />
+            </p>
+            <p>
               This can also be a preventative measure if ROBLOX/Guilded ever decides that they want
               to train AI models on chat messages.
-            </div>
+            </p>
           </div>
-        ) : (
-          <Breadcrumbs style={{ marginBottom: "45px" }}>{breadCrumbs}</Breadcrumbs>
-        )}
-        <div style={pageContentStyles}>
-          {currentPhase === PHASE["Load User"] ? (
-            <LoadUserPhase
-              user={user}
-              hmac={user.hmac}
-              isLoading={isLoading}
-              setUser={setUser}
-              setIsLoading={setIsLoading}
-              nextPhase={nextPhase}
-            />
-          ) : currentPhase === PHASE.Settings ? (
-            <SettingsPhase user={user} nextPhase={nextPhase} />
-          ) : currentPhase === PHASE.Teams ? (
-            <TeamsSelectorPhase
-              user={user}
-              isLoading={isLoading}
-              setIsLoading={setIsLoading}
-              nextPhase={nextPhase}
-            />
-          ) : currentPhase === PHASE.Channels ? (
-            <ChannelSelectorPhase user={user} nextPhase={nextPhase} />
-          ) : currentPhase === PHASE.Running ? (
-            <ProgressPhase user={user} />
-          ) : null}
         </div>
-        <div style={{ marginTop: "50px" }}>
-          <a
-            href={`mailto:support@guilded.gg?subject=GDPR Account Deletion Request&body=I would like to withdrawal consent, restriction processing, and request full erasure of all my personal data. My UserId is ${user.id}`}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-          >
-            <NButton color="danger" variant="bordered">
-              📧 Request account deletion
-            </NButton>
-          </a>
-          <br />
-          or
-          <br />
-          Email:{" "}
-          <Snippet hideSymbol variant="bordered">
-            support@guilded.gg
-          </Snippet>
-          <br />
-          Message:
-          <Snippet
-            hideSymbol
-            variant="bordered"
-            classNames={{
-              pre: "whitespace-pre-line text-pretty",
-            }}
-          >
-            I would like to withdrawal consent, restriction processing, and request full erasure of
-            all my personal data under GDPR. {user?.id && `My UserID is ${user.id}`}
-          </Snippet>
-        </div>
-      </main>
-      <a
-        className="github-fork-ribbon"
-        href="https://github.com/UpDownLeftDie/GuildedScrubber"
-        data-ribbon="Fork me on GitHub"
-        title="Fork me on GitHub"
-      >
-        Fork me on GitHub
-      </a>
-    </>
+      ) : (
+        <Breadcrumbs style={{ marginBottom: "45px" }}>{breadCrumbs}</Breadcrumbs>
+      )}
+      <div style={pageContentStyles}>
+        {currentPhase === PHASE["Load User"] ? (
+          <LoadUserPhase
+            user={user}
+            hmac={user.hmac}
+            isLoading={isLoading}
+            setUser={setUser}
+            setIsLoading={setIsLoading}
+            nextPhase={nextPhase}
+          />
+        ) : currentPhase === PHASE.Settings ? (
+          <SettingsPhase user={user} nextPhase={nextPhase} />
+        ) : currentPhase === PHASE.Teams ? (
+          <TeamsSelectorPhase
+            user={user}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            nextPhase={nextPhase}
+          />
+        ) : currentPhase === PHASE.Channels ? (
+          <ChannelSelectorPhase user={user} nextPhase={nextPhase} />
+        ) : currentPhase === PHASE.Running ? (
+          <ProgressPhase user={user} />
+        ) : null}
+      </div>
+      <Divider className="my-4" />
+      <DeleteAccount userId={user.id} />
+    </main>
   );
 }

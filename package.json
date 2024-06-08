@@ -3,12 +3,11 @@
   "version": "2.1.2",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run create-index && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix ./",
-    "test": "",
     "create-index": "create-index ./src/classes ./src/services ./src/templates ./src/atoms ./src/components ./src/molecules --extensions ts tsx --outputFile index.ts",
     "prepare": "husky"
   },

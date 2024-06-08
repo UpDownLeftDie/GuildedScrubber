@@ -1,4 +1,4 @@
-import Button, { FlavorsKey } from "@/atoms/Button";
+import { GSButton } from "@/atoms";
 import { Divider } from "@nextui-org/react";
 import { useEffect, useRef, useState } from "react";
 import ListSelector from "./ListSelector";
@@ -15,12 +15,13 @@ interface props {
   checkLists: CheckLists;
   onSubmit: (selectedListsItems: CheckLists) => Promise<void>;
   isLoading?: boolean;
-  flavor?: FlavorsKey;
+  flavor?: "gold" | "goldSolid";
+  size?: "md" | "lg" | "xl";
   additionalSelectedCount?: number;
 }
 
 function MultiListSelector(props: props) {
-  const { submitLabel, flavor, checkLists, additionalSelectedCount = 0 } = props;
+  const { submitLabel, flavor, size, isLoading, checkLists, additionalSelectedCount = 0 } = props;
   const [checkedListsItems, setCheckedListsItems] = useState<CheckLists>(new Map());
   const totalSelected = useRef(0);
 
@@ -79,12 +80,16 @@ function MultiListSelector(props: props) {
   return (
     <>
       {lists}
-      <Button
+      <GSButton
+        type="submit"
         onClick={onSubmit}
-        disabled={!totalSelected.current}
-        text={submitLabel}
-        flavor={flavor}
-      />
+        isLoading={isLoading}
+        isDisabled={!totalSelected.current}
+        color={flavor}
+        size={size}
+      >
+        {submitLabel}
+      </GSButton>
     </>
   );
 }
