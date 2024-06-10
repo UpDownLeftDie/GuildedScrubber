@@ -22,7 +22,7 @@ const DeleteAccount = ({ userId }: { userId?: string }) => {
         support@guilded.gg
       </Snippet>
       <br />
-      Message:
+      Message:{" "}
       <Snippet
         hideSymbol
         variant="bordered"

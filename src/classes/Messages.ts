@@ -34,10 +34,19 @@ export default class Messages {
     return texts;
   }
 
-  static EncryptTexts(texts: ExtractedMessageText, secretKey: string, deleteMode = false) {
+  static PrivateEditTexts(texts: ExtractedMessageText) {
     let encryptedTexts: GuildedMessageContentsById = {};
     Object.entries(texts).forEach(([messageId, messageInfo]) => {
-      const text = deleteMode ? "[deleted for privacy]" : encrypt(messageInfo.text, secretKey);
+      const text = "[deleted for privacy]";
+      encryptedTexts[messageId] = buildMessageContent(text);
+    });
+    return encryptedTexts;
+  }
+
+  static EncryptTexts(texts: ExtractedMessageText, secretKey: string) {
+    let encryptedTexts: GuildedMessageContentsById = {};
+    Object.entries(texts).forEach(([messageId, messageInfo]) => {
+      const text = encrypt(messageInfo.text, secretKey);
       encryptedTexts[messageId] = buildMessageContent(text);
     });
     return encryptedTexts;

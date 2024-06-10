@@ -73,9 +73,12 @@ export default class ChatChannel {
       if (decryptMode) {
         setAction("Decrypting messages");
         newMessages = Messages.DecryptTexts(texts, secretKey);
+      } else if (deleteMode) {
+        setAction("Prepping message for delete");
+        newMessages = Messages.PrivateEditTexts(texts);
       } else {
-        setAction(deleteMode ? "Prepping message for delete" : "Encrypting messages");
-        newMessages = Messages.EncryptTexts(texts, secretKey, deleteMode);
+        setAction("Encrypting messages");
+        newMessages = Messages.EncryptTexts(texts, secretKey);
       }
 
       await ChatChannel.UpdateMessages(channelId, newMessages);

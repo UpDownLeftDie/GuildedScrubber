@@ -52,9 +52,12 @@ export default class AnnouncementChannel {
       if (decryptMode) {
         setAction("Decrypting messages");
         newAnnouncements = Messages.DecryptTexts(texts, secretKey);
+      } else if (deleteMode) {
+        setAction("Prepping announcement for delete");
+        newAnnouncements = Messages.PrivateEditTexts(texts);
       } else {
-        setAction(deleteMode ? "Prepping announcement for delete" : "Encrypting announcement");
-        newAnnouncements = Messages.EncryptTexts(texts, secretKey, deleteMode);
+        setAction("Encrypting announcement");
+        newAnnouncements = Messages.EncryptTexts(texts, secretKey);
       }
 
       // await AnnouncementChannel.UpdateAnnouncement(channelId, newAnnouncements);

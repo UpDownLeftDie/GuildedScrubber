@@ -8,6 +8,7 @@ export { default as ForumChannel } from './ForumChannel.ts';
 export { default as GuildedScrubber } from './GuildedScrubber.ts';
 export { default as Hmac } from './Hmac.ts';
 export { default as Messages } from './Messages.ts';
+export { default as SchedulingChannel } from './SchedulingChannel.ts';
 export { default as Settings } from './Settings.ts';
 export { default as Team } from './Team.ts';
 export { default as User } from './User.ts';
