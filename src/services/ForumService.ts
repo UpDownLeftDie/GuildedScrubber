@@ -1,45 +1,26 @@
+import { NextApiRequest } from "next";
 import ApiService from "./ApiService";
 
 export default class ForumService {
-  static async GetThreads({
-    hmac,
-    channelId,
-    maxItems,
-    page,
-  }: {
-    hmac: string;
-    channelId: string;
-    maxItems?: number;
-    page?: number;
-  }) {
-    const { threads } = await _getThreads({
-      hmac,
-      channelId,
-      maxItems,
-      page,
-    });
+  static async GetThreads(
+    req: NextApiRequest,
+    channelId: string,
+    page?: number,
+    maxItems?: number,
+  ) {
+    const { threads } = await _getThreads(req, channelId, page, maxItems);
     console.log({ threads, totalLength: threads.length });
 
     return threads;
   }
 }
 
-async function _getThreads({
-  hmac,
-  channelId,
-  maxItems = 1000,
-  page = 1,
-}: {
-  hmac: string;
-  channelId: string;
-  maxItems?: number;
-  page?: number;
-}) {
+async function _getThreads(req: NextApiRequest, channelId: string, page = 1, maxItems = 1000) {
   let params = new URLSearchParams();
   params.append("maxItems", maxItems.toString());
   params.append("page", page.toString());
-  const url = `/channels/${channelId}/forums?${params.toString()}`;
-  const res = await ApiService.FetchGuilded({ hmac, url });
+  const endpoint = `/channels/${channelId}/forums?${params.toString()}`;
+  const res = await ApiService.FetchGuilded(req, endpoint);
   let { threads = [] } = res;
 
   console.log({ initialLength: threads.length });

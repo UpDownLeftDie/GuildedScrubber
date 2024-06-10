@@ -62,6 +62,9 @@ export default class Team {
           const bOrder = groupMap.get(b.groupId)?.sortOrder ?? 9999;
           if (aOrder > bOrder) return 1;
           if (aOrder < bOrder) return -1;
+
+          if (a.priority < b.priority) return 1;
+          if (a.priority > b.priority) return -1;
           return 0;
         });
 

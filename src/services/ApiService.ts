@@ -1,20 +1,21 @@
+import HTTPMethod from "http-method-enum";
 import fetch from "make-fetch-happen";
+import { NextApiRequest } from "next";
 import { v4 as uuid } from "uuid";
 
 const API_URL = "https://www.guilded.gg/api";
 
 export default class ApiService {
-  static async FetchGuilded({
-    hmac,
-    url,
-    method = "GET",
-    body,
-  }: {
-    hmac: string;
-    url: string;
-    method?: string;
-    body?: string;
-  }) {
+  static async FetchGuilded(
+    req: NextApiRequest,
+    endpoint: string,
+    method = HTTPMethod.GET,
+    body?: string,
+  ) {
+    const hmac = req.cookies["guilded-hmac"];
+    if (!hmac) {
+      return Response.json({ status: 401 });
+    }
     const headers: HeadersInit = {
       authority: "www.guilded.gg",
       accept: "*/*",
@@ -27,7 +28,7 @@ export default class ApiService {
       "sec-fetch-mode": "cors",
       "sec-fetch-site": "none",
     };
-    const fetchOptions = {
+    const fetchOptions: fetch.FetchOptions = {
       method,
       ...(body && { body }),
       headers,
@@ -36,11 +37,11 @@ export default class ApiService {
         randomize: true,
       },
     };
-    const apiUrl = `${API_URL}${url}`;
+    const externalApiUrl = `${API_URL}${endpoint}`;
 
-    console.log({ apiUrl, fetchOptions });
+    console.debug({ externalApiUrl, fetchOptions });
 
-    return await fetch(apiUrl, fetchOptions)
+    return await fetch(externalApiUrl, fetchOptions)
       .then((res) => res.json())
       .then((json) => {
         return json;

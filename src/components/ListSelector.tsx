@@ -60,7 +60,7 @@ const ListSelector = (props: props) => {
         value = groupNameResult?.[2];
         chip = (
           <Tooltip content="Server group" delay={1200} closeDelay={0}>
-            <Chip className="ml-2" variant="bordered" size="sm">
+            <Chip className="ml-2 cursor-default" variant="bordered" size="sm">
               {groupName}
             </Chip>
           </Tooltip>

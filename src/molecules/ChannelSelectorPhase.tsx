@@ -33,6 +33,7 @@ const ChannelSelectorPhase = ({ user, nextPhase }: { user: User; nextPhase: () =
   function convertChannelsToCheckLists(teams: Team[]): CheckLists {
     const teamsWithChannels: CheckLists = new Map();
     teams.forEach((team) => {
+      console.log(team.name, {channels: team.channels})
       const listItems: CheckListItems = new Map(
         team.channels.map((channel) => {
           const channelName = `${channel.groupName ? `[${channel.groupName}] ` : ""}${channel.name.trim()}`;
