@@ -29,7 +29,7 @@ export default class ApiService {
     };
     const fetchOptions = {
       method,
-      body,
+      ...(body && { body }),
       headers,
       retry: {
         retries: 10,
@@ -37,8 +37,8 @@ export default class ApiService {
       },
     };
     const apiUrl = `${API_URL}${url}`;
-    // beforeDate=2024-06-03T18%3A19%3A41.952Z
-    console.log({ apiUrl });
+
+    console.log({ apiUrl, fetchOptions });
 
     return await fetch(apiUrl, fetchOptions)
       .then((res) => res.json())

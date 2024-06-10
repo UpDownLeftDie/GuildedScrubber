@@ -3,6 +3,7 @@ import Announcements from "./AnnouncementChannel";
 import Channel, { ChannelContentType } from "./Channel";
 import ChatChannel from "./ChatChannel";
 import ForumChannel from "./ForumChannel";
+import SchedulingChannel from "./SchedulingChannel";
 import { MODES } from "./Settings";
 import User from "./User";
 
@@ -60,7 +61,7 @@ export default class GuildedScrubber {
         messageLimit,
       });
     } else if (channelContentType === ChannelContentType.ANNOUNCEMENT) {
-      const maxItems = 1000;
+      const maxItems = 100;
       itemCount += await Announcements.Process({
         user,
         channelId,
@@ -70,7 +71,7 @@ export default class GuildedScrubber {
         maxItems,
       });
     } else if (channelContentType === ChannelContentType.FORUM) {
-      const maxItems = 1000;
+      const maxItems = 100;
       itemCount += await ForumChannel.Process({
         user,
         channelId,
@@ -79,6 +80,9 @@ export default class GuildedScrubber {
         decryptMode,
         maxItems,
       });
+    } else if (channelContentType === ChannelContentType.SCHEDULING) {
+      const messageLimit = 100;
+      itemCount += await SchedulingChannel.Process({ user, channelId, setAction, messageLimit });
     } else if (DELETE_CHANNELS.includes(channelContentType)) {
     }
     return itemCount;

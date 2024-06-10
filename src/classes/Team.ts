@@ -65,7 +65,7 @@ export default class Team {
           return 0;
         });
 
-      this.channels = [...channels, ...temporalChannels];
+      this.channels = channels; //[...channels, ...temporalChannels];
       this.categories = categories;
     }
   }

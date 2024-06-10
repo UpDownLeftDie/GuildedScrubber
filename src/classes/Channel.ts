@@ -18,6 +18,7 @@ export enum ChannelContentType {
   EVENT = "event",
   LIST = "list",
   MEDIA = "media",
+  SCHEDULING = "scheduling",
 }
 
 export default class Channel {
@@ -32,6 +33,7 @@ export default class Channel {
     ChannelContentType.EVENT,
     ChannelContentType.LIST,
     ChannelContentType.MEDIA,
+    ChannelContentType.SCHEDULING,
   ];
 
   static FilterChannelsByMode(channelsArray: GuildedChannel[], mode: MODES) {

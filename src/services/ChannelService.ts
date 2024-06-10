@@ -1,6 +1,25 @@
 import ApiService from "./ApiService";
 
+export enum EntityType {
+  AVAILABILITY = "availability",
+}
+
 export default class ChannelService {
+  static async DeleteChannelEntity({
+    hmac,
+    channelId,
+    entityType,
+    entityId,
+  }: {
+    hmac: string;
+    channelId: string;
+    entityType: EntityType;
+    entityId: string;
+  }) {
+    const url = `/channels/${channelId}/${entityType}/${entityId}`;
+    return await ApiService.FetchGuilded({ hmac, url, method: "DELETE" });
+  }
+
   static async GetMessages({
     hmac,
     channelId,
@@ -49,6 +68,28 @@ export default class ChannelService {
     console.log({ announcements, totalLength: announcements.length });
 
     return announcements;
+  }
+
+  static async GetAvailabilities({
+    hmac,
+    channelId,
+    beforeDate,
+    afterDate,
+  }: {
+    hmac: string;
+    channelId: string;
+    beforeDate?: string;
+    afterDate?: string;
+  }) {
+    const { availabilities } = await _getAvailabilities({
+      hmac,
+      channelId,
+      beforeDate,
+      afterDate,
+    });
+    console.log({ availabilities, totalLength: availabilities.length });
+
+    return availabilities;
   }
 }
 
@@ -110,4 +151,25 @@ async function _getAnnouncements({
   const { announcements = [] } = await ApiService.FetchGuilded({ hmac, url });
 
   return { announcements };
+}
+
+async function _getAvailabilities({
+  hmac,
+  channelId,
+  beforeDate,
+  afterDate,
+}: {
+  hmac: string;
+  channelId: string;
+  beforeDate?: string;
+  afterDate?: string;
+}) {
+  let params = new URLSearchParams();
+  if (beforeDate) params.append("beforeDate", beforeDate);
+  if (afterDate) params.append("afterDate", afterDate);
+  const url = `/channels/${channelId}/availability?${params.toString()}`;
+
+  const availabilities = (await ApiService.FetchGuilded({ hmac, url })) ?? [];
+
+  return { availabilities };
 }
