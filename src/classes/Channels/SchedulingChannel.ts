@@ -1,6 +1,5 @@
+import { FetchApi, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
-import FetchApi from "./FetchApi";
-import User from "./User";
 
 export default class SchedulingChannel {
   static async #GetAvailability({

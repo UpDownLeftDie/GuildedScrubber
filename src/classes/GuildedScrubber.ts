@@ -1,9 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
-import Announcements from "./AnnouncementChannel";
 import Channel, { ChannelContentType } from "./Channel";
-import ChatChannel from "./ChatChannel";
-import ForumChannel from "./ForumChannel";
-import SchedulingChannel from "./SchedulingChannel";
+import { AnnouncementChannel, ChatChannel, ForumChannel, SchedulingChannel } from "./Channels";
 import { MODES } from "./Settings";
 import User from "./User";
 
@@ -62,7 +59,7 @@ export default class GuildedScrubber {
       });
     } else if (channelContentType === ChannelContentType.ANNOUNCEMENT) {
       const maxItems = 100;
-      itemCount += await Announcements.Process({
+      itemCount += await AnnouncementChannel.Process({
         user,
         channelId,
         setAction,

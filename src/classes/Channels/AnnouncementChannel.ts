@@ -1,4 +1,4 @@
-import { FetchApi, Messages, User } from "@/classes";
+import { FetchApi, Message, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
 
 export default class AnnouncementChannel {
@@ -38,7 +38,7 @@ export default class AnnouncementChannel {
 
       announcementCount += await AnnouncementChannel.HandleReplies(announcements);
 
-      const filteredAnnouncements = Messages.FilterByUserAndMode(
+      const filteredAnnouncements = Message.FilterByUserAndMode(
         user.id,
         announcements,
         decryptMode,
@@ -48,16 +48,16 @@ export default class AnnouncementChannel {
       announcementCount += filteredAnnouncements.length;
 
       let newAnnouncements;
-      const texts = Messages.GetTextFromContent(filteredAnnouncements);
+      const texts = Message.GetTextFromContent(filteredAnnouncements);
       if (decryptMode) {
         setAction("Decrypting messages");
-        newAnnouncements = Messages.DecryptTexts(texts, secretKey);
+        newAnnouncements = Message.DecryptTexts(texts, secretKey);
       } else if (deleteMode) {
         setAction("Prepping announcement for delete");
-        newAnnouncements = Messages.PrivateEditTexts(texts);
+        newAnnouncements = Message.PrivateEditTexts(texts);
       } else {
         setAction("Encrypting announcement");
-        newAnnouncements = Messages.EncryptTexts(texts, secretKey);
+        newAnnouncements = Message.EncryptTexts(texts, secretKey);
       }
 
       // await AnnouncementChannel.UpdateAnnouncement(channelId, newAnnouncements);

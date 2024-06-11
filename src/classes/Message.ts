@@ -3,7 +3,7 @@ import crypto from "crypto";
 const algorithm = "aes-256-ctr";
 const ivSearchStr = " IV: ";
 
-export default class Messages {
+export default class Message {
   static FilterByUserAndMode(
     userId: string,
     messages: GuildedMessage[],

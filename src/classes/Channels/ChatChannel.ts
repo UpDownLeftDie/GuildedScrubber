@@ -1,7 +1,6 @@
+import { FetchApi, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
-import FetchApi from "./FetchApi";
-import Messages, { GuildedMessage, GuildedMessageContentsById } from "./Messages";
-import User from "./User";
+import Message, { GuildedMessage, GuildedMessageContentsById } from "../Message";
 
 export default class ChatChannel {
   static async UpdateMessages(channelId: string, messages: GuildedMessageContentsById) {
@@ -57,7 +56,7 @@ export default class ChatChannel {
       if (!messages?.length) break;
       beforeDate = new Date(messages[messages.length - 1].createdAt);
 
-      const filteredMessages = Messages.FilterByUserAndMode(
+      const filteredMessages = Message.FilterByUserAndMode(
         user.id,
         messages,
         decryptMode,
@@ -69,16 +68,16 @@ export default class ChatChannel {
       messageCount += filteredMessages.length;
 
       let newMessages: GuildedMessageContentsById;
-      const texts = Messages.GetTextFromContent(filteredMessages);
+      const texts = Message.GetTextFromContent(filteredMessages);
       if (decryptMode) {
         setAction("Decrypting messages");
-        newMessages = Messages.DecryptTexts(texts, secretKey);
+        newMessages = Message.DecryptTexts(texts, secretKey);
       } else if (deleteMode) {
         setAction("Prepping message for delete");
-        newMessages = Messages.PrivateEditTexts(texts);
+        newMessages = Message.PrivateEditTexts(texts);
       } else {
         setAction("Encrypting messages");
-        newMessages = Messages.EncryptTexts(texts, secretKey);
+        newMessages = Message.EncryptTexts(texts, secretKey);
       }
 
       await ChatChannel.UpdateMessages(channelId, newMessages);

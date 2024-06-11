@@ -1,5 +1,5 @@
+import { User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
-import User from "./User";
 
 export default class ForumChannel {
   static async Process({

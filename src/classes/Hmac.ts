@@ -7,6 +7,6 @@ export default class Hmac {
       hmac = _hmac;
     }
 
-    return hmac.replace(/[^0-9^a-z^A-Z^\.]/g, "");
+    return hmac.trim().replace(/[^0-9^a-z^A-Z^\.]/g, "");
   }
 }
