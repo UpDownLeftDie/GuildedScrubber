@@ -1,8 +1,8 @@
 import { NextApiRequest } from "next";
 import ApiService from "./ApiService";
 
-export default class AvailabilityService {
-  static async GetAvailabilities(
+export default class ListService {
+  static async GetListItems(
     req: NextApiRequest,
     channelId: string,
     {
@@ -16,9 +16,11 @@ export default class AvailabilityService {
     let params = new URLSearchParams();
     if (beforeDate) params.append("beforeDate", beforeDate);
     if (afterDate) params.append("afterDate", afterDate);
-    const endpoint = `/channels/${channelId}/availability?${params.toString()}`;
+    const endpoint = `/channels/${channelId}/listitems?${params.toString()}`;
 
-    const availabilities = (await ApiService.FetchGuilded(req, endpoint)) ?? [];
-    return availabilities;
+    const listItems = (await ApiService.FetchGuilded(req, endpoint)) ?? [];
+    console.log({ listItems, totalLength: listItems.length });
+
+    return listItems;
   }
 }

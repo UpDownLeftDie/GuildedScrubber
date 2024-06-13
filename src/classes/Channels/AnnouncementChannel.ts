@@ -1,5 +1,7 @@
-import { FetchApi, Message, User } from "@/classes";
+import { Message, User } from "@/classes";
+import { ChannelType } from "@/services/ChannelService";
 import { Dispatch, SetStateAction } from "react";
+import { GuildedMessageContent } from "../Message";
 
 export default class AnnouncementChannel {
   static async Process({
@@ -8,14 +10,14 @@ export default class AnnouncementChannel {
     setAction,
     deleteMode,
     decryptMode,
-    maxItems,
+    limit,
   }: {
     user: User;
     channelId: string;
     setAction: Dispatch<SetStateAction<string>>;
     deleteMode: boolean;
     decryptMode: boolean;
-    maxItems: number;
+    limit: number;
   }) {
     const { settings } = user;
     const { secretKey } = settings;
@@ -24,16 +26,17 @@ export default class AnnouncementChannel {
     let announcementCount = 0;
     do {
       setAction("Loading announcements and replies");
-      const announcements = await FetchApi({
-        route: `channel/${channelId}/announcements`,
-        headers: new Headers([
-          ["before-date", beforeDate.toISOString()],
-          ["after-date", afterDate.toISOString()],
-          ["max-items", maxItems.toString()],
-        ]),
-      });
+      const announcements = await Message.GetMessages<Announcement>(
+        channelId,
+        ChannelType.ANNOUNCEMENTS,
+        {
+          beforeDate,
+          afterDate,
+          maxItems: limit,
+        },
+      );
       if (!announcements?.length) break;
-      beforeDate = announcements[announcements.length - 1].createdAt;
+      beforeDate = new Date(announcements[announcements.length - 1].createdAt);
       console.log({ announcements });
 
       announcementCount += await AnnouncementChannel.HandleReplies(announcements);
@@ -65,7 +68,7 @@ export default class AnnouncementChannel {
         setAction("Deleting messages");
         // await AnnouncementChannel.DeleteAnnouncement(channelId, newAnnouncements);
       }
-    } while (announcements?.length >= maxItems);
+    } while (announcements?.length >= limit);
     return announcementCount;
   }
 
@@ -73,4 +76,49 @@ export default class AnnouncementChannel {
     // TODO: this function
     return 0;
   }
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: GuildedMessageContent;
+  visibility: string;
+  slug: string | null;
+  replies: {
+    id: number;
+    message?: GuildedMessageContent;
+    gameId: string | null;
+    teamId: string;
+    editedAt: string | null;
+    contentId: number;
+    createdAt: string;
+    createdBy: string;
+  }[];
+  reactions: {
+    reactedUsers: string[];
+    reactionId: number;
+    customReactionId: number;
+    createdAt: string;
+    customReaction: {
+      id: number;
+      name: string;
+      png: string;
+      webp: string;
+      apng: string | null;
+      teamId: number;
+    };
+  }[];
+  createdAt: string;
+  editedAt: string | null;
+  createdBy: string;
+  teamId: string;
+  gameId: string | null;
+  channelId: string;
+  deletedAt: string | null;
+  isPublic: boolean;
+  robloxModeratedAt: string | null;
+  robloxModerationStatus: string | null;
+  robloxModerationReason: string | null;
+  isPinned: boolean;
+  groupId: string;
 }

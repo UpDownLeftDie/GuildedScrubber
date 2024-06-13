@@ -2,21 +2,18 @@ import { GuildedMessage } from "@/classes/Message";
 import HTTPMethod from "http-method-enum";
 import { NextApiRequest } from "next";
 import ApiService from "./ApiService";
-import ChannelService, { EntityType } from "./ChannelService";
+import { ChannelType } from "./ChannelService";
 
 export default class MessageService {
   static async UpdateMessage(
     req: NextApiRequest,
     channelId: string,
+    channelType: ChannelType,
     messageId: string,
     body: string,
   ) {
     const endpoint = `/channels/${channelId}/messages/${messageId}`;
     return await ApiService.FetchGuilded(req, endpoint, HTTPMethod.PUT, body);
-  }
-
-  static async DeleteMessage(req: NextApiRequest, channelId: string, messageId: string) {
-    return await ChannelService.DeleteChannelEntity(req, channelId, EntityType.MESSAGES, messageId);
   }
 
   static async GetMessages(

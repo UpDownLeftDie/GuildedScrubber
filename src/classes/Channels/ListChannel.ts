@@ -1,41 +1,41 @@
 import { User } from "@/classes";
 import { ChannelType } from "@/services/ChannelService";
 import { Dispatch, SetStateAction } from "react";
-import Message, { GuildedMessage, GuildedMessageContentsById } from "../Message";
+import Message, { GuildedMessageContent, GuildedMessageContentsById } from "../Message";
 
-export default class ChatChannel {
+export default class ListChannel {
   static async Process({
     user,
     channelId,
     setAction,
     deleteMode,
     decryptMode,
-    limit = 100,
+    maxItems = 100,
   }: {
     user: User;
     channelId: string;
     setAction: Dispatch<SetStateAction<string>>;
     deleteMode: boolean;
     decryptMode: boolean;
-    limit: number;
+    maxItems: number;
   }) {
     const { settings } = user;
     const { secretKey } = settings;
     let { beforeDate, afterDate } = settings;
-    let messages: GuildedMessage[];
+    let messages: ListItem[];
     let messageCount = 0;
     do {
       setAction("Loading messages");
-      messages = await Message.GetMessages<GuildedMessage>(channelId, ChannelType.MESSAGES, {
+      messages = await Message.GetMessages(channelId, ChannelType.LIST_ITEMS, {
         beforeDate,
         afterDate,
-        messageLimit: limit,
+        maxItems,
       });
 
       if (!messages?.length) break;
       beforeDate = new Date(messages[messages.length - 1].createdAt);
 
-      const filteredMessages = Message.FilterByUserAndMode(
+      const filteredMessages = Message.FilterByUserAndMode<ListItem>(
         user.id,
         messages,
         decryptMode,
@@ -47,7 +47,7 @@ export default class ChatChannel {
       messageCount += filteredMessages.length;
 
       let newMessages: GuildedMessageContentsById;
-      const texts = Message.GetTextFromContent(filteredMessages);
+      const texts = Message.GetTextFromContent<ListItem>(filteredMessages);
       if (decryptMode) {
         setAction("Decrypting messages");
         newMessages = Message.DecryptTexts(texts, secretKey);
@@ -59,12 +59,36 @@ export default class ChatChannel {
         newMessages = Message.EncryptTexts(texts, secretKey);
       }
 
-      await Message.UpdateMessages(channelId, ChannelType.MESSAGES, newMessages);
+      await Message.UpdateMessages(channelId, ChannelType.LIST_ITEMS, newMessages);
       if (deleteMode) {
         setAction("Deleting messages");
-        await Message.DeleteMessages(channelId, ChannelType.MESSAGES, newMessages);
+        await Message.DeleteMessages(channelId, ChannelType.LIST_ITEMS, newMessages);
       }
-    } while (messages?.length >= limit);
+    } while (messages?.length >= maxItems);
     return messageCount;
   }
+}
+
+export interface ListItem {
+  id: string;
+  message: GuildedMessageContent;
+  priority: number;
+  channelId: string;
+  createdAt: string;
+  createdBy: string;
+  hasNote: boolean;
+  noteCreatedBy: string;
+  noteCreatedAt: string;
+  noteUpdatedBy: string | null;
+  noteUpdatedAt: string | null;
+  updatedBy: string | null;
+  updatedAt: string | null;
+  completedBy: string | null;
+  completedAt: string | null;
+  deletedBy: string | null;
+  deletedAt: string | null;
+  parentId: string | null;
+  teamId: string;
+  webhookId: string | null;
+  assignedTo: string[];
 }

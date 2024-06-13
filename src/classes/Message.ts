@@ -1,33 +1,93 @@
 // file deepcode ignore InsecureCipherNoIntegrity: not sure why this is wrong, probably not important in this context
+import { ChannelType } from "@/services/ChannelService";
 import crypto from "crypto";
+import { Announcement } from "./Channels/AnnouncementChannel";
+import { ListItem } from "./Channels/ListChannel";
+import FetchBackend from "./FetchBackend";
 const algorithm = "aes-256-ctr";
 const ivSearchStr = " IV: ";
 
 export default class Message {
-  static FilterByUserAndMode(
+  static async GetMessages<T>(
+    channelId: string,
+    channelType: ChannelType,
+    {
+      beforeDate,
+      afterDate,
+      messageLimit,
+      maxItems,
+    }: { beforeDate: Date; afterDate: Date; messageLimit?: number; maxItems?: number },
+  ) {
+    const headers = new Headers([
+      ["before-date", beforeDate.toISOString()],
+      ["after-date", afterDate.toISOString()],
+    ]);
+    if (messageLimit) {
+      headers.append("message-limit", messageLimit.toString());
+    } else if (maxItems) {
+      headers.append("max-items", maxItems.toString());
+    }
+
+    return await FetchBackend.Channels.GET<T>(channelId, channelType, headers);
+  }
+
+  static async UpdateMessages(
+    channelId: string,
+    channelType: ChannelType,
+    messages: GuildedMessageContentsById,
+  ) {
+    for (const [messageId, data] of Object.entries(messages)) {
+      await FetchBackend.Channels.PUT(channelId, channelType, messageId, data);
+    }
+  }
+
+  static async DeleteMessages(
+    channelId: string,
+    channelType: ChannelType,
+    messages: GuildedMessageContentsById,
+  ) {
+    for (const [messageId] of Object.entries(messages)) {
+      await FetchBackend.Channels.DELETE(channelId, channelType, messageId);
+    }
+  }
+
+  static FilterByUserAndMode<T extends GuildedMessage | ListItem | Announcement>(
     userId: string,
-    messages: GuildedMessage[],
+    messages: T[],
     decryptMode: boolean,
     deleteMode: boolean,
-  ) {
+  ): T[] {
     return messages.filter((message) => {
       if (message.createdBy !== userId) return false; // can't act on other user's messages
       if (deleteMode) return true; // deleting messages so don't care if they're encrypted or not
 
       // if we're encrypting messages
       if (!decryptMode) {
-        const text = findTextInNodes(message.content.document.nodes);
+        let nodes = (message as GuildedMessage)?.content.document.nodes;
+        if (Object.hasOwn(message, "message")) {
+          nodes = (message as ListItem)?.message.document.nodes;
+        }
+        if (!nodes) return false;
+
+        const text = findTextInNodes(nodes);
         return !text.includes(ivSearchStr); // don't include messages that are already encrypted
       }
       return true;
     });
   }
 
-  static GetTextFromContent(items: GuildedMessage[]) {
+  static GetTextFromContent<T extends GuildedMessage | ListItem | Announcement>(
+    items: T[],
+  ): ExtractedMessageText {
     const texts: ExtractedMessageText = {};
     for (const item of items) {
+      let nodes = (item as GuildedMessage)?.content.document.nodes;
+      if (Object.hasOwn(item, "message")) {
+        nodes = (item as ListItem)?.message.document.nodes;
+      }
+
       texts[item.id] = {
-        text: findTextInNodes(item.content.document.nodes),
+        text: findTextInNodes(nodes),
         channelId: item.channelId,
       };
     }
@@ -159,14 +219,7 @@ type GuildedMessageNode =
 
 export interface GuildedMessage {
   id: string;
-  content: {
-    object: string;
-    document: {
-      data: {};
-      nodes: GuildedMessageNode[];
-      object: string;
-    };
-  };
+  content: GuildedMessageContent;
   type: string;
   reactions: {
     customReactionId: number;
@@ -196,4 +249,13 @@ export interface GuildedMessage {
   isPinned: boolean;
   pinnedBy: string | null;
   repliesTo: string;
+}
+
+export interface GuildedMessageContent {
+  object: string;
+  document: {
+    data: {};
+    nodes: GuildedMessageNode[];
+    object: string;
+  };
 }

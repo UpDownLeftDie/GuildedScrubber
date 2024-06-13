@@ -1,5 +1,5 @@
 import { GuildedChannel, GuildedTeamChannel } from "./Channel";
-import FetchApi from "./FetchApi";
+import FetchBackend from "./FetchBackend";
 
 export default class Team {
   isTeam = true;
@@ -39,9 +39,7 @@ export default class Team {
     this.profilePicture = profilePicture;
     this.teamDashImage = teamDashImage;
     if (!this.channels?.length) {
-      const res = (await FetchApi({
-        route: `team/${this.id}`,
-      })) as { channels: GuildedTeamChannels; groups: GuildedTeamGroup[] };
+      const res = await FetchBackend.Team.GET(this.id);
       const { channels: teamChannels, groups: teamGroups } = res;
       const { temporalChannels, categories } = teamChannels;
 

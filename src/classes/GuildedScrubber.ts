@@ -46,41 +46,24 @@ export default class GuildedScrubber {
     let itemCount = 0;
     const deleteMode = mode === MODES.DELETE;
     const decryptMode = mode === MODES.DECRYPT;
+    let limit = 100;
 
-    if (CHAT_CHANNELS.includes(channelContentType)) {
-      const messageLimit = 100;
-      itemCount += await ChatChannel.Process({
-        user,
-        channelId,
-        setAction,
-        deleteMode,
-        decryptMode,
-        messageLimit,
-      });
-    } else if (channelContentType === ChannelContentType.ANNOUNCEMENT) {
-      const maxItems = 100;
-      itemCount += await AnnouncementChannel.Process({
-        user,
-        channelId,
-        setAction,
-        deleteMode,
-        decryptMode,
-        maxItems,
-      });
+    const processParams = {
+      user,
+      channelId,
+      setAction,
+      deleteMode,
+      decryptMode,
+      limit,
+    };
+    if (channelContentType === ChannelContentType.ANNOUNCEMENT) {
+      itemCount += await AnnouncementChannel.Process(processParams);
     } else if (channelContentType === ChannelContentType.FORUM) {
-      const maxItems = 100;
-      itemCount += await ForumChannel.Process({
-        user,
-        channelId,
-        setAction,
-        deleteMode,
-        decryptMode,
-        maxItems,
-      });
+      itemCount += await ForumChannel.Process(processParams);
     } else if (channelContentType === ChannelContentType.SCHEDULING) {
-      const messageLimit = 100;
-      itemCount += await SchedulingChannel.Process({ user, channelId, setAction, messageLimit });
-    } else if (DELETE_CHANNELS.includes(channelContentType)) {
+      itemCount += await SchedulingChannel.Process(processParams);
+    } else if (CHAT_CHANNELS.includes(channelContentType)) {
+      itemCount += await ChatChannel.Process(processParams);
     }
     return itemCount;
   }

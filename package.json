@@ -35,12 +35,12 @@
     "autoprefixer": "^10.4.19",
     "create-index": "^2.6.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.3",
+    "eslint-config-next": "14.2.4",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.0.11",
     "postcss": "^8.4.38",
-    "prettier": "3.3.1",
+    "prettier": "3.3.2",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5"
+    "typescript": "^5.4.5"
   }
 }

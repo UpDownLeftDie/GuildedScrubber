@@ -1,49 +1,19 @@
-import { FetchApi, User } from "@/classes";
+import { Message, User } from "@/classes";
+import { ChannelType } from "@/services/ChannelService";
 import { Dispatch, SetStateAction } from "react";
+import { GuildedMessage, GuildedMessageContentsById } from "../Message";
 
 export default class SchedulingChannel {
-  static async #GetAvailability({
-    channelId,
-    beforeDate,
-    afterDate,
-  }: {
-    channelId: string;
-    beforeDate: Date;
-    afterDate: Date;
-  }): Promise<AvailabilityEntry[]> {
-    return await FetchApi({
-      route: `channel/${channelId}/availability`,
-      headers: new Headers([
-        ["before-date", beforeDate.toISOString()],
-        ["after-date", afterDate.toISOString()],
-      ]),
-    });
-  }
-
-  static async #DeleteAvailability(availabilityEntries: AvailabilityEntry[]) {
-    for (const availabilityEntry of availabilityEntries) {
-      console.log({
-        availabilityEntry,
-        channelId: availabilityEntry.channelId,
-        id: availabilityEntry.id,
-      });
-      await FetchApi({
-        route: `channel/${availabilityEntry.channelId}/availability/${availabilityEntry.id}`,
-        method: "DELETE",
-      });
-    }
-  }
-
   static async Process({
     user,
     channelId,
     setAction,
-    messageLimit,
+    limit = 100,
   }: {
     user: User;
     channelId: string;
     setAction: Dispatch<SetStateAction<string>>;
-    messageLimit: number;
+    limit?: number;
   }) {
     const { settings } = user;
     let { beforeDate, afterDate } = settings;
@@ -51,10 +21,10 @@ export default class SchedulingChannel {
     let entryCount = 0;
     do {
       setAction("Loading availability/schedule entries");
-      entries = await SchedulingChannel.#GetAvailability({
-        channelId,
+      entries = await Message.GetMessages<AvailabilityEntry>(channelId, ChannelType.AVAILABILITY, {
         beforeDate,
         afterDate,
+        maxItems: limit,
       });
 
       console.log({ entries });
@@ -62,15 +32,21 @@ export default class SchedulingChannel {
       if (!entries?.length) break;
       beforeDate = new Date(entries[entries.length - 1].createdAt);
 
-      const filteredEntries = entries.filter((entry) => entry.userId === user.id);
-      if (!filteredEntries?.length) {
+      const filteredEntries = entries.reduce((acc, entry) => {
+        if (entry.userId === user.id) {
+          acc[entry.id] = {} as GuildedMessage;
+        }
+        return acc;
+      }, {} as GuildedMessageContentsById);
+      const length = Object.keys(filteredEntries).length;
+      if (!length) {
         continue;
       }
-      entryCount += filteredEntries.length;
+      entryCount += length;
 
       setAction("Deleting availability/schedule Entries");
-      await SchedulingChannel.#DeleteAvailability(filteredEntries);
-    } while (entries?.length >= messageLimit);
+      await Message.DeleteMessages(channelId, ChannelType.AVAILABILITY, filteredEntries);
+    } while (entries?.length >= limit);
 
     return entryCount;
   }
