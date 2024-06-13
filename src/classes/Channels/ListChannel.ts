@@ -1,7 +1,7 @@
-import { User } from "@/classes";
-import { ChannelType } from "@/services/ChannelService";
+import { Message, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
-import Message, { GuildedMessageContent, GuildedMessageContentsById } from "../Message";
+import { ChannelEndpoint } from "../Channel";
+import { GuildedMessageContent, GuildedMessageContentsById } from "../Message";
 
 export default class ListChannel {
   static async Process({
@@ -26,7 +26,7 @@ export default class ListChannel {
     let messageCount = 0;
     do {
       setAction("Loading messages");
-      messages = await Message.GetMessages(channelId, ChannelType.LIST_ITEMS, {
+      messages = await Message.GetMessages(channelId, ChannelEndpoint.LIST_ITEMS, {
         beforeDate,
         afterDate,
         maxItems,
@@ -59,10 +59,10 @@ export default class ListChannel {
         newMessages = Message.EncryptTexts(texts, secretKey);
       }
 
-      await Message.UpdateMessages(channelId, ChannelType.LIST_ITEMS, newMessages);
+      await Message.UpdateMessages(channelId, ChannelEndpoint.LIST_ITEMS, newMessages);
       if (deleteMode) {
         setAction("Deleting messages");
-        await Message.DeleteMessages(channelId, ChannelType.LIST_ITEMS, newMessages);
+        await Message.DeleteMessages(channelId, ChannelEndpoint.LIST_ITEMS, newMessages);
       }
     } while (messages?.length >= maxItems);
     return messageCount;

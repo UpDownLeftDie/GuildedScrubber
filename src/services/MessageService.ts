@@ -2,13 +2,13 @@ import { GuildedMessage } from "@/classes/Message";
 import HTTPMethod from "http-method-enum";
 import { NextApiRequest } from "next";
 import ApiService from "./ApiService";
-import { ChannelType } from "./ChannelService";
+import { ChannelEndpoint } from "@/classes/Channel";
 
 export default class MessageService {
   static async UpdateMessage(
     req: NextApiRequest,
     channelId: string,
-    channelType: ChannelType,
+    channelType: ChannelEndpoint,
     messageId: string,
     body: string,
   ) {

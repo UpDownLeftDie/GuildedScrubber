@@ -4,7 +4,7 @@ import { AnnouncementChannel, ChatChannel, ForumChannel, SchedulingChannel } fro
 import { MODES } from "./Settings";
 import User from "./User";
 
-const { CHAT_CHANNELS, TOPIC_CHANNELS, DELETE_CHANNELS } = Channel;
+const { CHAT_CHANNELS } = Channel;
 
 export default class GuildedScrubber {
   static async ScrubChannels(

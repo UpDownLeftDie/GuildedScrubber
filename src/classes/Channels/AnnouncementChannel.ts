@@ -1,6 +1,6 @@
 import { Message, User } from "@/classes";
-import { ChannelType } from "@/services/ChannelService";
 import { Dispatch, SetStateAction } from "react";
+import { ChannelEndpoint } from "../Channel";
 import { GuildedMessageContent } from "../Message";
 
 export default class AnnouncementChannel {
@@ -28,7 +28,7 @@ export default class AnnouncementChannel {
       setAction("Loading announcements and replies");
       const announcements = await Message.GetMessages<Announcement>(
         channelId,
-        ChannelType.ANNOUNCEMENTS,
+        ChannelEndpoint.ANNOUNCEMENTS,
         {
           beforeDate,
           afterDate,

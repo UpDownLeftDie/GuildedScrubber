@@ -3,14 +3,14 @@
 // See ./[entityId]/index.ts for messages controller
 //  ex: /channels/{channelId}/messages/{messageId}
 
+import { ChannelEndpoint } from "@/classes/Channel";
 import { AvailabilityService, ForumService, MessageService } from "@/services";
-import { ChannelType } from "@/services/ChannelService";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === `GET`) {
     const channelId = req.query.channelId as string;
-    const channelType = req.query.channelType as ChannelType;
+    const channelType = req.query.channelType as ChannelEndpoint;
 
     if (!channelId || !channelType) {
       return res.status(400).json({ message: "Missing either channelId or channelType" });
@@ -23,25 +23,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let entities;
     switch (channelType) {
-      case ChannelType.AVAILABILITY:
+      case ChannelEndpoint.AVAILABILITY:
         entities = await AvailabilityService.GetAvailabilities(req, channelId, {
           beforeDate,
           afterDate,
         });
         break;
-      case ChannelType.FORUMS:
+      case ChannelEndpoint.FORUMS:
         const page = Number(req.headers.page as string);
         entities = await ForumService.GetThreads(req, channelId, page, maxItems);
         break;
-      case ChannelType.MESSAGES:
+      case ChannelEndpoint.MESSAGES:
         entities = await MessageService.GetMessages(req, channelId, {
           messageLimit,
           beforeDate,
           afterDate,
         });
         break;
-      case ChannelType.ANNOUNCEMENTS:
-      case ChannelType.LIST_ITEMS:
+      case ChannelEndpoint.ANNOUNCEMENTS:
+      case ChannelEndpoint.LIST_ITEMS:
         return res.status(501).json({ message: "This channel type isn't setup yet" });
       default:
         return res.status(404).json({ message: "Unknown channelType" });

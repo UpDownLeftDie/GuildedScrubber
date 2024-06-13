@@ -1,6 +1,6 @@
 // file deepcode ignore InsecureCipherNoIntegrity: not sure why this is wrong, probably not important in this context
-import { ChannelType } from "@/services/ChannelService";
 import crypto from "crypto";
+import { ChannelEndpoint } from "./Channel";
 import { Announcement } from "./Channels/AnnouncementChannel";
 import { ListItem } from "./Channels/ListChannel";
 import FetchBackend from "./FetchBackend";
@@ -10,7 +10,7 @@ const ivSearchStr = " IV: ";
 export default class Message {
   static async GetMessages<T>(
     channelId: string,
-    channelType: ChannelType,
+    channelType: ChannelEndpoint,
     {
       beforeDate,
       afterDate,
@@ -33,7 +33,7 @@ export default class Message {
 
   static async UpdateMessages(
     channelId: string,
-    channelType: ChannelType,
+    channelType: ChannelEndpoint,
     messages: GuildedMessageContentsById,
   ) {
     for (const [messageId, data] of Object.entries(messages)) {
@@ -43,7 +43,7 @@ export default class Message {
 
   static async DeleteMessages(
     channelId: string,
-    channelType: ChannelType,
+    channelType: ChannelEndpoint,
     messages: GuildedMessageContentsById,
   ) {
     for (const [messageId] of Object.entries(messages)) {

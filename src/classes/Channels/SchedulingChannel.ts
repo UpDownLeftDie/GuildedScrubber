@@ -1,6 +1,6 @@
 import { Message, User } from "@/classes";
-import { ChannelType } from "@/services/ChannelService";
 import { Dispatch, SetStateAction } from "react";
+import { ChannelEndpoint } from "../Channel";
 import { GuildedMessage, GuildedMessageContentsById } from "../Message";
 
 export default class SchedulingChannel {
@@ -21,11 +21,15 @@ export default class SchedulingChannel {
     let entryCount = 0;
     do {
       setAction("Loading availability/schedule entries");
-      entries = await Message.GetMessages<AvailabilityEntry>(channelId, ChannelType.AVAILABILITY, {
-        beforeDate,
-        afterDate,
-        maxItems: limit,
-      });
+      entries = await Message.GetMessages<AvailabilityEntry>(
+        channelId,
+        ChannelEndpoint.AVAILABILITY,
+        {
+          beforeDate,
+          afterDate,
+          maxItems: limit,
+        },
+      );
 
       console.log({ entries });
 
@@ -45,7 +49,7 @@ export default class SchedulingChannel {
       entryCount += length;
 
       setAction("Deleting availability/schedule Entries");
-      await Message.DeleteMessages(channelId, ChannelType.AVAILABILITY, filteredEntries);
+      await Message.DeleteMessages(channelId, ChannelEndpoint.AVAILABILITY, filteredEntries);
     } while (entries?.length >= limit);
 
     return entryCount;
