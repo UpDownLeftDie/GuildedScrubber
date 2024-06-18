@@ -1,7 +1,7 @@
 import { Message, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
 import { ChannelEndpoint } from "../Channel";
-import { GuildedMessageContent, GuildedMessageContentsById } from "../Message";
+import { GuildedMessageContent, GuildedMessagesById } from "../Message";
 
 export default class ListChannel {
   static async Process({
@@ -46,23 +46,22 @@ export default class ListChannel {
       }
       messageCount += filteredMessages.length;
 
-      let newMessages: GuildedMessageContentsById;
-      const texts = Message.GetTextFromContent<ListItem>(filteredMessages);
+      let newMessages: GuildedMessagesById;
       if (decryptMode) {
         setAction("Decrypting messages");
-        newMessages = Message.DecryptTexts(texts, secretKey);
+        newMessages = Message.DecryptGuildedMessages(filteredMessages, secretKey);
       } else if (deleteMode) {
         setAction("Prepping message for delete");
-        newMessages = Message.PrivateEditTexts(texts);
+        newMessages = Message.PrivateEditGuildedMessage(filteredMessages);
       } else {
         setAction("Encrypting messages");
-        newMessages = Message.EncryptTexts(texts, secretKey);
+        newMessages = Message.EncryptGuildedMessages(filteredMessages, secretKey);
       }
 
-      await Message.UpdateMessages(channelId, ChannelEndpoint.LIST_ITEMS, newMessages);
+      await Message.UpdateMessages(newMessages, ChannelEndpoint.LIST_ITEMS);
       if (deleteMode) {
         setAction("Deleting messages");
-        await Message.DeleteMessages(channelId, ChannelEndpoint.LIST_ITEMS, newMessages);
+        await Message.DeleteMessages(newMessages, ChannelEndpoint.LIST_ITEMS);
       }
     } while (messages?.length >= maxItems);
     return messageCount;

@@ -4,7 +4,7 @@
 //  ex: /channels/{channelId}/messages/{messageId}
 
 import { ChannelEndpoint } from "@/classes/Channel";
-import { AvailabilityService, ForumService, MessageService } from "@/services";
+import { AvailabilityService, ForumService, MessageService } from "@/services/Channels";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -1,6 +1,6 @@
 import HTTPMethod from "http-method-enum";
 import { GuildedDMChannel } from "./Channel";
-import { GuildedMessage } from "./Message";
+import { GuildedMessageTypes } from "./Message";
 import { GuildedTeamChannels, GuildedTeamGroup } from "./Team";
 import { GuildedUser } from "./User";
 
@@ -17,7 +17,7 @@ export default class FetchBackend {
       channelId: string,
       channelType: string,
       entityId: string,
-      data?: GuildedMessage,
+      data?: GuildedMessageTypes,
     ): Promise<T[]> {
       return fetchBackend({
         route: `channels/${channelId}/${channelType}/${entityId}`,

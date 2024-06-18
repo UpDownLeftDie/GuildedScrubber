@@ -1,5 +1,5 @@
 import { ChannelEndpoint } from "@/classes/Channel";
-import { ChannelService, MessageService } from "@/services";
+import { ChannelService } from "@/services";
 import HTTPMethod from "http-method-enum";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -11,7 +11,7 @@ async function handlePUT(
   entityId: string,
   body: string,
 ) {
-  const updatedMessage = await MessageService.UpdateMessage(
+  const updatedMessage = await ChannelService.UpdateChannelEntity(
     req,
     channelId,
     channelType,
@@ -39,7 +39,7 @@ async function handleDELETE(
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const channelId = req.query.channelId as string;
-  const entityId = req.query.messageId as string;
+  const entityId = req.query.entityId as string;
   const channelType = req.query.channelType as ChannelEndpoint;
 
   switch (req.method) {

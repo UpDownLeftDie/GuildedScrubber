@@ -51,16 +51,15 @@ export default class AnnouncementChannel {
       announcementCount += filteredAnnouncements.length;
 
       let newAnnouncements;
-      const texts = Message.GetTextFromContent(filteredAnnouncements);
       if (decryptMode) {
         setAction("Decrypting messages");
-        newAnnouncements = Message.DecryptTexts(texts, secretKey);
+        newAnnouncements = Message.DecryptGuildedMessages(filteredAnnouncements, secretKey);
       } else if (deleteMode) {
         setAction("Prepping announcement for delete");
-        newAnnouncements = Message.PrivateEditTexts(texts);
+        newAnnouncements = Message.PrivateEditGuildedMessage(filteredAnnouncements);
       } else {
         setAction("Encrypting announcement");
-        newAnnouncements = Message.EncryptTexts(texts, secretKey);
+        newAnnouncements = Message.EncryptGuildedMessages(filteredAnnouncements, secretKey);
       }
 
       // await AnnouncementChannel.UpdateAnnouncement(channelId, newAnnouncements);

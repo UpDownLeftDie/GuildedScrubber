@@ -1,7 +1,7 @@
 import { Message, User } from "@/classes";
 import { Dispatch, SetStateAction } from "react";
 import { ChannelEndpoint } from "../Channel";
-import { GuildedMessage, GuildedMessageContentsById } from "../Message";
+import { GuildedMessage, GuildedMessagesById } from "../Message";
 
 export default class SchedulingChannel {
   static async Process({
@@ -41,7 +41,7 @@ export default class SchedulingChannel {
           acc[entry.id] = {} as GuildedMessage;
         }
         return acc;
-      }, {} as GuildedMessageContentsById);
+      }, {} as GuildedMessagesById);
       const length = Object.keys(filteredEntries).length;
       if (!length) {
         continue;
@@ -49,7 +49,7 @@ export default class SchedulingChannel {
       entryCount += length;
 
       setAction("Deleting availability/schedule Entries");
-      await Message.DeleteMessages(channelId, ChannelEndpoint.AVAILABILITY, filteredEntries);
+      await Message.DeleteMessages(filteredEntries, ChannelEndpoint.AVAILABILITY);
     } while (entries?.length >= limit);
 
     return entryCount;
