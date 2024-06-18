@@ -1,72 +1,143 @@
 // file deepcode ignore InsecureCipherNoIntegrity: not sure why this is wrong, probably not important in this context
 import crypto from "crypto";
+import { ChannelEndpoint } from "./Channel";
+import { Announcement } from "./Channels/AnnouncementChannel";
+import { ListItem } from "./Channels/ListChannel";
+import FetchBackend from "./FetchBackend";
 const algorithm = "aes-256-ctr";
 const ivSearchStr = " IV: ";
 
+export type GuildedMessageTypes = GuildedMessage | ListItem | Announcement;
+
 export default class Message {
-  static FilterByUserAndMode(
+  static async GetMessages<T>(
+    channelId: string,
+    channelType: ChannelEndpoint,
+    {
+      beforeDate,
+      afterDate,
+      messageLimit,
+      maxItems,
+    }: { beforeDate: Date; afterDate: Date; messageLimit?: number; maxItems?: number },
+  ) {
+    const headers = new Headers([
+      ["before-date", beforeDate.toISOString()],
+      ["after-date", afterDate.toISOString()],
+    ]);
+    if (messageLimit) {
+      headers.append("message-limit", messageLimit.toString());
+    } else if (maxItems) {
+      headers.append("max-items", maxItems.toString());
+    }
+
+    return await FetchBackend.Channels.GET<T>(channelId, channelType, headers);
+  }
+
+  static async UpdateMessages(messages: GuildedMessagesById, channelType: ChannelEndpoint) {
+    for (const [messageId, data] of Object.entries(messages)) {
+      await FetchBackend.Channels.PUT(data.channelId, channelType, messageId, data);
+    }
+  }
+
+  static async DeleteMessages(messages: GuildedMessagesById, channelType: ChannelEndpoint) {
+    for (const [messageId, data] of Object.entries(messages)) {
+      await FetchBackend.Channels.DELETE(data.channelId, channelType, messageId);
+    }
+  }
+
+  static FilterByUserAndMode<T extends GuildedMessageTypes>(
     userId: string,
-    messages: GuildedMessage[],
+    messages: T[],
     decryptMode: boolean,
     deleteMode: boolean,
-  ) {
+  ): T[] {
     return messages.filter((message) => {
       if (message.createdBy !== userId) return false; // can't act on other user's messages
       if (deleteMode) return true; // deleting messages so don't care if they're encrypted or not
 
       // if we're encrypting messages
       if (!decryptMode) {
-        const text = findTextInNodes(message.content.document.nodes);
+        let nodes = (message as GuildedMessage)?.content.document.nodes;
+        if (Object.hasOwn(message, "message")) {
+          nodes = (message as ListItem)?.message.document.nodes;
+        }
+        if (!nodes) return false;
+
+        const text = findTextInNodes(nodes);
         return !text.includes(ivSearchStr); // don't include messages that are already encrypted
       }
       return true;
     });
   }
 
-  static GetTextFromContent(items: GuildedMessage[]) {
-    const texts: ExtractedMessageText = {};
-    for (const item of items) {
-      texts[item.id] = {
-        text: findTextInNodes(item.content.document.nodes),
-        channelId: item.channelId,
-      };
+  static GetTextFromContent<T extends GuildedMessageTypes>(item: T): ExtractedMessageText {
+    let nodes = (item as GuildedMessage)?.content.document.nodes;
+    if (Object.hasOwn(item, "message")) {
+      nodes = (item as ListItem)?.message.document.nodes;
     }
-    return texts;
+
+    return {
+      text: findTextInNodes(nodes),
+      channelId: item.channelId,
+    };
   }
 
-  static PrivateEditTexts(texts: ExtractedMessageText) {
-    let encryptedTexts: GuildedMessageContentsById = {};
-    Object.entries(texts).forEach(([messageId, messageInfo]) => {
+  static PrivateEditGuildedMessage<T extends GuildedMessageTypes>(messages: T[]) {
+    let editedTexts: GuildedMessagesById = {};
+
+    messages.forEach((message) => {
       const text = "[deleted for privacy]";
-      encryptedTexts[messageId] = buildMessageContent(text);
+      if (Object.hasOwn(message, "message")) {
+        (message as ListItem).message = buildMessageContent(text);
+      } else {
+        (message as GuildedMessage).content = buildMessageContent(text);
+      }
+      editedTexts[message.id] = message;
+    });
+    return editedTexts;
+  }
+
+  static EncryptGuildedMessages<T extends GuildedMessageTypes>(messages: T[], secretKey: string) {
+    let encryptedTexts: GuildedMessagesById = {};
+
+    messages.forEach((message) => {
+      const extractedText = Message.GetTextFromContent(message);
+      const text = encrypt(extractedText.text, secretKey);
+      if (Object.hasOwn(message, "message")) {
+        (message as ListItem).message = buildMessageContent(text);
+      } else {
+        (message as GuildedMessage).content = buildMessageContent(text);
+      }
+      encryptedTexts[message.id] = message;
     });
     return encryptedTexts;
   }
 
-  static EncryptTexts(texts: ExtractedMessageText, secretKey: string) {
-    let encryptedTexts: GuildedMessageContentsById = {};
-    Object.entries(texts).forEach(([messageId, messageInfo]) => {
-      const text = encrypt(messageInfo.text, secretKey);
-      encryptedTexts[messageId] = buildMessageContent(text);
-    });
-    return encryptedTexts;
-  }
+  static DecryptGuildedMessages<T extends GuildedMessageTypes>(messages: T[], secretKey: string) {
+    let decryptedMessageContents: GuildedMessagesById = {};
 
-  static DecryptTexts(texts: ExtractedMessageText, secretKey: string) {
-    let decryptedMessageContents: GuildedMessageContentsById = {};
-    Object.entries(texts).forEach(([messageId, messageInfo]) => {
-      const messageText = messageInfo.text;
-      const ivIndex = messageText.indexOf(ivSearchStr);
-      const iv = Buffer.from(messageText.slice(ivIndex + 5, messageText.length), "hex");
-      const text = messageText.slice(0, ivIndex);
-      decryptedMessageContents[messageId] = buildMessageContent(decrypt(text, secretKey, iv));
+    messages.forEach((message) => {
+      const extractedText = Message.GetTextFromContent(message);
+      if (Object.hasOwn(message, "message")) {
+        (message as ListItem).message = Message.#DecryptTexts(extractedText.text, secretKey);
+      } else {
+        (message as GuildedMessage).content = Message.#DecryptTexts(extractedText.text, secretKey);
+      }
+      decryptedMessageContents[message.id] = message;
     });
     return decryptedMessageContents;
   }
+
+  static #DecryptTexts(messageText: string, secretKey: string): GuildedMessageContent {
+    const ivIndex = messageText.indexOf(ivSearchStr);
+    const iv = Buffer.from(messageText.slice(ivIndex + 5, messageText.length), "hex");
+    const text = messageText.slice(0, ivIndex);
+    return buildMessageContent(decrypt(text, secretKey, iv));
+  }
 }
 
-export interface GuildedMessageContentsById {
-  [key: string]: GuildedMessage;
+export interface GuildedMessagesById {
+  [key: string]: GuildedMessageTypes;
 }
 
 function findTextInNodes(nodes: GuildedMessageNode[], string = "", depth = 0) {
@@ -103,42 +174,42 @@ function decrypt(text: string, secretKey: string, iv: Buffer) {
   return decrypted.toString();
 }
 
-function buildMessageContent(contentText: string): GuildedMessage {
+function buildMessageContent(contentText: string): GuildedMessageContent {
   return {
-    content: {
-      object: "value",
-      document: {
-        object: "document",
-        data: {},
-        nodes: [
-          {
-            object: "block",
-            type: "paragraph",
-            data: {},
-            nodes: [
-              {
-                object: "text",
-                leaves: [
-                  {
-                    object: "leaf",
-                    text: contentText,
-                    marks: [],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
+    object: "value",
+    document: {
+      object: "document",
+      data: {},
+      nodes: [
+        {
+          object: "block",
+          type: "paragraph",
+          data: {},
+          nodes: [
+            {
+              object: "text",
+              leaves: [
+                {
+                  object: "leaf",
+                  text: contentText,
+                  marks: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
-  } as GuildedMessage;
+  } as GuildedMessageContent;
 }
 
 interface ExtractedMessageText {
-  [key: string]: {
-    text: string;
-    channelId: string;
-  };
+  text: string;
+  channelId: string;
+}
+
+interface ExtractedMessageTexts {
+  [key: string]: ExtractedMessageText;
 }
 
 type GuildedMessageNode =
@@ -159,14 +230,7 @@ type GuildedMessageNode =
 
 export interface GuildedMessage {
   id: string;
-  content: {
-    object: string;
-    document: {
-      data: {};
-      nodes: GuildedMessageNode[];
-      object: string;
-    };
-  };
+  content: GuildedMessageContent;
   type: string;
   reactions: {
     customReactionId: number;
@@ -196,4 +260,13 @@ export interface GuildedMessage {
   isPinned: boolean;
   pinnedBy: string | null;
   repliesTo: string;
+}
+
+export interface GuildedMessageContent {
+  object: string;
+  document: {
+    data: {};
+    nodes: GuildedMessageNode[];
+    object: string;
+  };
 }

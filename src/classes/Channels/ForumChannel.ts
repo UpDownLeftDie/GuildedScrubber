@@ -8,14 +8,14 @@ export default class ForumChannel {
     setAction,
     deleteMode,
     decryptMode,
-    maxItems,
+    limit,
   }: {
     user: User;
     channelId: string;
     setAction: Dispatch<SetStateAction<string>>;
     deleteMode: boolean;
     decryptMode: boolean;
-    maxItems: number;
+    limit: number;
   }) {
     const { settings } = user;
     const { secretKey } = settings;

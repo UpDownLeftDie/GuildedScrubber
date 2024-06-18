@@ -1,5 +1,6 @@
+import { ChannelEndpoint } from "@/classes/Channel";
 import { NextApiRequest } from "next";
-import ApiService from "./ApiService";
+import ChannelService from "../ChannelService";
 
 export default class AnnouncementService {
   static async GetAnnouncements(
@@ -15,13 +16,16 @@ export default class AnnouncementService {
       afterDate?: string;
     },
   ) {
-    let params = new URLSearchParams();
-    params.append("maxItems", maxItems.toString());
-    if (beforeDate) params.append("beforeDate", beforeDate);
-    if (afterDate) params.append("afterDate", afterDate);
-    const endpoint = `/channels/${channelId}/announcements?${params.toString()}`;
-
-    const { announcements = [] } = await ApiService.FetchGuilded(req, endpoint);
+    const { announcements = [] } = await ChannelService.GetChannelEntity(
+      req,
+      channelId,
+      ChannelEndpoint.ANNOUNCEMENTS,
+      {
+        beforeDate,
+        afterDate,
+        maxItems,
+      },
+    );
 
     console.log({ announcements, totalLength: announcements.length });
 

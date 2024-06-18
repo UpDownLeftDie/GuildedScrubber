@@ -1,6 +1,5 @@
 import Cookies from "js-cookie";
-import { GuildedDMChannel } from "./Channel";
-import FetchApi from "./FetchApi";
+import FetchBackend from "./FetchBackend";
 import Settings from "./Settings";
 import Team from "./Team";
 
@@ -25,7 +24,7 @@ export default class User {
 
   async LoadUser(hmac: string): Promise<User> {
     this.#setHmac(hmac);
-    const guildedUser = (await FetchApi({ route: "user" })) as GuildedUser;
+    const guildedUser = await FetchBackend.User.GET_SELF();
 
     this.guildedUser = guildedUser;
     this.guildedUserTeams = guildedUser.teams;
@@ -50,9 +49,7 @@ export default class User {
   }
 
   async LoadDMs(): Promise<Team> {
-    const dmChannels = (await FetchApi({
-      route: `user/${this.id}/dms`,
-    })) as GuildedDMChannel[];
+    const dmChannels = await FetchBackend.User.GET_DMS(this.id);
     const channels = dmChannels
       .map((channel) => {
         if (channel.name) return channel;

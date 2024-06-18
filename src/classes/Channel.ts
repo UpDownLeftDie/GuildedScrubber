@@ -1,8 +1,11 @@
 import { MODES } from "./Settings";
 
-enum ChannelType {
-  TEAM = "Team",
-  DM = "DM",
+export enum ChannelEndpoint {
+  ANNOUNCEMENTS = "announcements",
+  AVAILABILITY = "availability",
+  FORUMS = "forums",
+  LIST_ITEMS = "listitems",
+  MESSAGES = "messages",
 }
 
 export enum ChannelContentType {
@@ -28,13 +31,13 @@ export default class Channel {
     ChannelContentType.VOICE,
   ];
   static TOPIC_CHANNELS = [ChannelContentType.ANNOUNCEMENT, ChannelContentType.FORUM];
-  static DELETE_CHANNELS = [
-    ChannelContentType.DOC,
-    ChannelContentType.EVENT,
-    ChannelContentType.LIST,
-    ChannelContentType.MEDIA,
-    ChannelContentType.SCHEDULING,
-  ];
+  // static DELETE_CHANNELS = [
+  //   ChannelContentType.DOC,
+  //   ChannelContentType.EVENT,
+  //   ChannelContentType.LIST,
+  //   ChannelContentType.MEDIA,
+  //   ChannelContentType.SCHEDULING,
+  // ];
 
   static FilterChannelsByMode(channelsArray: GuildedChannel[], mode: MODES) {
     const editableChannels = [...Channel.CHAT_CHANNELS, ...Channel.TOPIC_CHANNELS];
@@ -67,6 +70,11 @@ interface BasicGuildedChannel {
   archivedByWebhookId: string | null;
   channelCategory: string | null;
   groupName: string | null;
+}
+
+enum ChannelType {
+  TEAM = "Team",
+  DM = "DM",
 }
 
 export interface GuildedTeamChannel extends BasicGuildedChannel {
